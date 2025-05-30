@@ -1,0 +1,33 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Matplotlib cache
+.matplotlib/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Compiled Cython files
+*.so
+*.pyd
+build/
+dist/
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# environment
+env_detector/

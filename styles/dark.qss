@@ -1,0 +1,151 @@
+/* General Application Background */
+/* QMainWindow {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+
+} */
+QWidget {
+    background-color: #1e1e1e; /* Ensure central widget inherits the background */
+}
+
+/* GroupBox Styling */
+QGroupBox {
+    border: 1px solid #3c3c3c;
+    border-radius: 2px;
+    margin-top: 10px; /* Reduce the margin above the group box */
+    padding: 0px; /* Reduce the padding inside the group box */
+    background-color: #252526;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    padding: 0 3px;
+    color: #569cd6;
+    font-weight: bold;
+}
+
+/* Label Styling */
+QLabel {
+    color: #d4d4d4;
+    font-size: 14px;
+}
+
+/* Button Styling */
+QPushButton {
+    background-color: #3c3c3c;
+    color: #d4d4d4;
+    border: 1px solid #3c3c3c;
+    border-radius: 3px;
+    padding: 5px 10px;
+}
+
+QPushButton:hover {
+    background-color: #505050;
+}
+
+QPushButton:pressed {
+    background-color: #2d2d2d;
+}
+
+/* LineEdit Styling */
+QLineEdit {
+    background-color: #252526;
+    color: #d4d4d4;
+    border: 1px solid #3c3c3c;
+    border-radius: 3px;
+    padding: 1px;
+}
+
+/* ComboBox Styling */
+QComboBox {
+    background-color: #252526;
+    color: #d4d4d4;
+    border: 1px solid #3c3c3c;
+    border-radius: 3px;
+    padding: 1px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    selection-background-color: #3c3c3c;
+    selection-color: #d4d4d4;
+}
+
+/* ScrollBar Styling */
+QScrollBar:vertical, QScrollBar:horizontal {
+    background-color: #1e1e1e;
+    border: 1px solid #3c3c3c;
+    width: 10px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+    background-color: #3c3c3c;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover {
+    background-color: #505050;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    background: none;
+}
+
+/* TableView Styling */
+QTableView {
+    background-color: #252526;
+    color: #d4d4d4;
+    gridline-color: #3c3c3c;
+    border: 1px solid #3c3c3c;
+}
+
+QHeaderView::section {
+    background-color: #3c3c3c;
+    color: #d4d4d4;
+    padding: 1px;
+    border: 1px solid #3c3c3c;
+}
+
+/* TabWidget Styling */
+QTabWidget::pane {
+    border: 1px solid #3c3c3c;
+    background-color: #1e1e1e;
+}
+
+QTabBar::tab {
+    background-color: #252526;
+    color: #d4d4d4;
+    padding: 5px;
+    border: 1px solid #3c3c3c;
+    border-radius: 3px;
+}
+
+QTabBar::tab:selected {
+    background-color: #3c3c3c;
+    color: #ffffff;
+}
+
+QTabBar::tab:hover {
+    background-color: #505050;
+}
+
+/* ProgressBar Styling */
+QProgressBar {
+    background-color: #252526;
+    border: 1px solid #3c3c3c;
+    border-radius: 3px;
+    text-align: center;
+    color: #d4d4d4;
+}
+
+QProgressBar::chunk {
+    background-color: #569cd6;
+    border-radius: 3px;
+}
+
+QCheckBox {
+    color: white; /* Set the text color to white */
+}
