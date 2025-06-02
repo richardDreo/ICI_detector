@@ -129,9 +129,6 @@ def get_demodulated_samples(samples: np.ndarray, fs: float, demodulation_boundar
     b, a = sp.butter(8, band_width, 'lowpass', fs=current_fs)
     filtered = sp.filtfilt(b, a, filtered)
 
-    # # Resample
-    # demodulated_samples = resample(filtered, int(len(filtered) / (current_fs / new_fs)))
-
     return demodulated_samples, new_fs
 
 
@@ -160,8 +157,6 @@ def get_cepstro(t: np.ndarray, f: np.ndarray, s: np.ndarray) -> tuple:
     """
 
     c = np.zeros(np.shape(s))
-#     q = 1/f
-#     q[0] = 0
     df = f[1] - f[0]
     q = np.fft.rfftfreq(2*(len(f) - 1), df)
     c = np.fft.irfft(np.log(np.abs(s)), axis=-2)
