@@ -7,11 +7,11 @@ The tool enables efficient visualization, parameter tuning, and analysis of larg
 
 ## 🚀 Features
 
-* 🎧 **Spectrogram Visualization** – Explore acoustic patterns visually
-* 📈 **ICI Analysis** – Detect ICI using advanced signal processing
-* 🛠️ **Parameter Customization** – Adjust detection parameters via GUI widgets
-* 🗺️ **Geographic Visualization** – Map detection sites with Cartopy
+* 🗺️ **Geographic Visualization** – Network station visualization with Cartopy
 * 📂 **Batch Data Processing** – Handle large sets of structured audio data
+* 🎧 **Spectrogram Visualization** – Explore acoustic data with spectrograms
+* 📈 **ICI Analysis** – Detect/extract ICI using advanced signal processing
+* 🛠️ **Parameter Customization** – Adjust detection parameters via GUI widgets
 
 ---
 
@@ -37,20 +37,21 @@ The tool enables efficient visualization, parameter tuning, and analysis of larg
 
 ```bash
 git clone https://github.com/richardDreo/ICI_detector.git
-cd GUI_ICI_detector
+cd ICI_detector
 ```
+### 2. Install python 3.11
 
-### 2. Create and activate a virtual environment
+### 3. Create and activate a virtual environment
 
 ```bash
-python -m venv env_detector
+python3.11 -m venv env_detector
 # macOS/Linux
 source env_detector/bin/activate
 # Windows
 .\env_detector\Scripts\activate
 ```
 
-### 3. Install dependencies
+### 4. Install dependencies
 
 ```bash
 pip install -r requirements.txt --no-deps
@@ -72,7 +73,7 @@ python ici_detector.py
 2. **Visualize the recording locations** on the map in the **Network** tab.
 3. In the **Spectrogram** tab:
 
-   * Configure spectrogram parameters.
+   * Configure spectrogram parameters (short term or long term windows).
    * Visualize the spectrogram.
 4. In the **Detection** tab:
 
