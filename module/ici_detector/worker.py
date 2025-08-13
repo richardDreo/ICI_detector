@@ -96,15 +96,30 @@ class WorkerIciDetector(QThread):
         return None
 
     def process_species(self, st, preset_parameters):
-
         try:
-            f, t, s = get_spectrogram(
-                st[0],
-                preset_parameters['fftsize'],
-                int(preset_parameters['fftsize'] * preset_parameters['overlap']),
-                preset_parameters['integration'],
-                [preset_parameters['filter_boundaries'][0], preset_parameters['filter_boundaries'][1]]
-            )
+            # Initialize empty lists to store concatenated results
+            all_frequencies = []
+            all_times = []
+            all_spectrograms = []
+
+            for tr in st:
+                f, t, s = get_spectrogram(
+                    tr,
+                    preset_parameters['fftsize'],
+                    int(preset_parameters['fftsize'] * preset_parameters['overlap']),
+                    preset_parameters['integration'],
+                    [preset_parameters['filter_boundaries'][0], preset_parameters['filter_boundaries'][1]]
+                )
+
+                all_frequencies.append(f)
+                all_times.append(t)
+                all_spectrograms.append(s)
+
+            # Concatenate all results
+            f = all_frequencies[0]  # Frequencies are the same for all traces
+            t = np.concatenate(all_times)
+            s = np.concatenate(all_spectrograms, axis=1)
+
             return get_cepstro(t, f, s)
         except Exception as e:
             print('Error processing species:', e)

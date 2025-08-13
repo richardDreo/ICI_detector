@@ -9,7 +9,7 @@ import gc
 import numpy as np
 from pydub import AudioSegment
 from mutagen.flac import FLAC
-
+from scipy.signal import butter, filtfilt
 
 def get_network_details(net_path: str, inventory_path: str) -> pd.DataFrame:
     """
@@ -210,11 +210,17 @@ def get_stream_for_selected_file(filename: str, channel: str = None, day: str = 
     Stream
         An ObsPy Stream containing the data.
     """
+    def highpass_filter(data, cutoff, fs, order=4):
+        nyquist = 0.5 * fs
+        normal_cutoff = cutoff / nyquist
+        b, a = butter(order, normal_cutoff, btype='high', analog=False)
+        return filtfilt(b, a, data)
+    
     if '.flac' in filename:
         stream = read_flac_file(filename)
     else:
         stream = read(filename)
-
+        
         if day:
             dt1 = UTCDateTime(day)
             dt2 = dt1 + timedelta(hours=24)
@@ -224,12 +230,15 @@ def get_stream_for_selected_file(filename: str, channel: str = None, day: str = 
         stream = stream.select(channel=channel)
 
     try:
-        stream = stream.merge()
+        for tr in stream:
+            tr.data = tr.data.astype(float)
+            tr.data = highpass_filter(tr.data, cutoff=1.0, fs=tr.stats.sampling_rate)
+        # stream = stream.merge()
+        # stream.merge(method=1, fill_value=0)
     except Exception as e:
         raise RuntimeError(f"Impossible to merge stream: {e}")
 
     return stream
-
 
 
 def get_calibrated_stream(stream: Stream, df_stations: pd.DataFrame) -> Stream:

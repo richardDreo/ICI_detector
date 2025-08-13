@@ -71,7 +71,7 @@ def get_mean_cepstrum(cepstrum: np.ndarray, quefrency: np.ndarray = None) -> np.
     qmax = int(0.9 * len(quefrency))
 
     cepstrum_abs = np.abs(cepstrum)
-    mean_cepstrum = np.mean(cepstrum_abs, axis=1)
+    mean_cepstrum = np.nanmean(cepstrum_abs, axis=1)
 
     sub_quefrency = quefrency[qmin:qmax]
     sub_mean_cepstrum = signal.medfilt(mean_cepstrum[qmin:qmax], 5)

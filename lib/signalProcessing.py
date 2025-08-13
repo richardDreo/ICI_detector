@@ -5,30 +5,43 @@ from scipy.signal import decimate, resample
 from obspy.core import Trace
 
 
-def integrate_tf_representation(t: np.ndarray, R: np.ndarray, i: int) -> tuple:
+import numpy as np
+import pandas as pd
+
+import numpy as np
+import pandas as pd
+
+def integrate_tf_representation(t, R: np.ndarray, i: int) -> tuple:
     """
-    Compute the integration of the time-dependent representation (Spectrogram or Cepstrogram).
-
-    Parameters
-    ----------
-    t : np.ndarray
-        Array of time values.
-    R : np.ndarray
-        Spectrogram or cepstrogram.
-    i : int
-        Number of spectra to average to obtain the resulting representation.
-
-    Returns
-    -------
-    tuple
-        Tuple containing:
-        - tres: New time scale.
-        - Rres: New integrated representation.
+    Average every 'i' spectra along the time axis, ignoring NaNs in R,
+    and include the last incomplete block.
     """
-    tres = t[0::i]
-    Rres = pd.DataFrame(R).T.rolling(i, min_periods=1).mean().T.to_numpy()[:, 0::i]
-    return tres, Rres
+    t = np.asarray(t)
 
+    n_rows, n_cols = R.shape
+    n_blocks = int(np.ceil(n_cols / i))  # on arrondit vers le haut
+
+    R_mean_list = []
+    t_mean_list = []
+
+    for b in range(n_blocks):
+        start = b * i
+        end = min((b + 1) * i, n_cols)
+
+        R_block = R[:, start:end]
+        t_block = t[start:end]
+
+        R_mean_list.append(np.nanmean(R_block, axis=1))
+
+        # moyenne temporelle
+        t_block_ns = t_block.astype("datetime64[ns]").astype("int64")
+        t_mean_ns = np.nanmean(t_block_ns, axis=0)
+        t_mean_list.append(t_mean_ns.astype("datetime64[ns]"))
+
+    R_mean = np.vstack(R_mean_list).T  # on remet dans la forme (freq x temps)
+    t_mean = np.array(t_mean_list)
+
+    return t_mean, R_mean
 
 
 def get_spectrogram(tr: Trace, fftsize: int, noverlap: int, integration: int = None, demBounds: list = None) -> tuple:
@@ -43,7 +56,6 @@ def get_spectrogram(tr: Trace, fftsize: int, noverlap: int, integration: int = N
         except Exception as e:
             print(f"Error in demodulation: {e}")
 
-    # frequencies, times, spectrogram = compute_stft_cpu(samples, sampling_rate, fftsize, noverlap)
     frequencies, times, spectrogram = sp.stft(samples, fs=sampling_rate, nperseg=int(fftsize), noverlap=noverlap)   
     frequencies += additional_freq
 

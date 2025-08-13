@@ -3,6 +3,9 @@ import numpy as np
 import pandas as pd
 import warnings
 
+import os
+import json
+
 from datetime import datetime
 from geographiclib.geodesic import Geodesic
 
@@ -302,6 +305,12 @@ class MainWindow(QWidget):
 
     def __init__(self):
         super().__init__()
+
+        # Load config
+        config_path = os.path.join(os.path.dirname(__file__), "./config/config.json")
+        with open(config_path, 'r') as file:
+            self.config = json.load(file)        
+
         # create_modules()
         self.module_spectrogram = ModuleSpectrogram()
         self.sig_set_dates.connect(self.module_spectrogram.set_dates)
@@ -323,8 +332,8 @@ class MainWindow(QWidget):
         self.module_detector.sig_new_selection_to_save.connect(self.module_bdd.save_selection)
         self.module_bdd.sig_new_selection_added.connect(self.bdd_table_update)
 
-        # Créer l’instance du gestionnaire réseau
-        self.network_manager = NetworkManager("/Volumes/SDS/INVENTORIES", "/Volumes/SDS")
+        # Créer l’instance du gestionnaire réseau        
+        self.network_manager = NetworkManager(self.config["INV_folder"], self.config["SDS_folder"])
 
         # Charger les données au démarrage
         self.dfstations, self.dfmseeds = self.network_manager.load_metadata()
