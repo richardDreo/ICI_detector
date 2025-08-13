@@ -87,6 +87,8 @@ python ici_detector.py
 
 ```
 ICI_detector/
+├── config/                  
+    └── config.json
 ├── docs/                  
     └── audio_format.md
 ├── lib/                 
@@ -127,6 +129,9 @@ ICI_detector/
 ## 📄 Audio File Requirements
 
 This application expects input audio files in **MiniSEED format** and **SDS-compliant directory structure**, with a sampling rate of 250 Hz and 24h duration per file.
+
+## Before running the code
+-> Set the paths to SDS root folder, and Inventories root Folder in the ./config/config.json
 
 📘 See full details here:
 **[`docs/audio_format.md`](docs/audio_format.md)**
