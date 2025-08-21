@@ -21,6 +21,8 @@ class ModuleIciDetector(QObject):
         self.parameterWidget.sig_applyP2vrRequested.connect(self.update_p2vr_result)
         self.parameterWidget.sig_refreshPlotRequested.connect(self.update_p2vr_result)
         self.display.sig_save_coordinates.connect(self.save_coordinates)
+        self.parameterWidget.cepstrogram_radio.clicked.connect(self.update_p2vr_result)
+        self.parameterWidget.detection_results_radio.clicked.connect(self.update_p2vr_result)
 
     def __init__(self):
         super().__init__()
@@ -81,37 +83,73 @@ class ModuleIciDetector(QObject):
         result['tscale'] = result['tscale'][mask]
         result['cepstro'] = result['cepstro'][:, mask]
 
-
-        self.plotter.display_cepstrogram(
-            result,
-            self.starttime,
-            self.endtime,
-            self.cesptrogram_result["qmin"],
-            self.cesptrogram_result["qmax"],
-            self.cesptrogram_result["vmin"],
-            self.cesptrogram_result["vmax"],
-        )
+        if self.cesptrogram_result["display_mode"]=="cepstrogram":
+            self.plotter.display_cepstrogram(
+                result,
+                self.starttime,
+                self.endtime,
+                self.cesptrogram_result["qmin"],
+                self.cesptrogram_result["qmax"],
+                self.cesptrogram_result["vmin"],
+                self.cesptrogram_result["vmax"],
+            )
+        elif self.cesptrogram_result["display_mode"]=="detection_results":
+            self.plotter.display_detection_results(
+                result,
+                self.starttime,
+                self.endtime,
+                self.cesptrogram_result["qmin"],
+                self.cesptrogram_result["qmax"],
+                self.cesptrogram_result["vmin"],
+                self.cesptrogram_result["vmax"],
+                self.cesptrogram_result["metric"]
+            )
 
     def update_p2vr_result(self):
-
+        print("Updating P2VR result with new parameters...")
         new_params = self.parameterWidget.get_all_parameters()
         for key, value in new_params.items():
             if key in self.cesptrogram_result:
                 self.cesptrogram_result[key] = value
 
-        self.worker.run_p2vr_detection(self.cesptrogram_result['q'], 
-                                        self.cesptrogram_result['cepstro'], 
-                                        self.cesptrogram_result)
+        self.cesptrogram_result["p2vr"],self.cesptrogram_result["positive"] = self.worker.run_p2vr_detection(self.cesptrogram_result['q'], 
+                                            self.cesptrogram_result['cepstro'], 
+                                            self.cesptrogram_result)
         
-        self.plotter.display_cepstrogram(
-            self.cesptrogram_result,
-            self.starttime,
-            self.endtime,
-            self.cesptrogram_result["qmin"],
-            self.cesptrogram_result["qmax"],
-            self.cesptrogram_result["vmin"],
-            self.cesptrogram_result["vmax"],
-        )
+
+
+        # self.plotter.display_cepstrogram(
+        #     self.cesptrogram_result,
+        #     self.starttime,
+        #     self.endtime,
+        #     self.cesptrogram_result["qmin"],
+        #     self.cesptrogram_result["qmax"],
+        #     self.cesptrogram_result["vmin"],
+        #     self.cesptrogram_result["vmax"],
+        # )
+
+
+        if self.cesptrogram_result["display_mode"]=="cepstrogram":
+            self.plotter.display_cepstrogram(
+                self.cesptrogram_result,
+                self.starttime,
+                self.endtime,
+                self.cesptrogram_result["qmin"],
+                self.cesptrogram_result["qmax"],
+                self.cesptrogram_result["vmin"],
+                self.cesptrogram_result["vmax"],
+            )
+        elif self.cesptrogram_result["display_mode"]=="detection_results":
+            self.plotter.display_detection_results(
+                self.cesptrogram_result,
+                self.starttime,
+                self.endtime,
+                self.cesptrogram_result["qmin"],
+                self.cesptrogram_result["qmax"],
+                self.cesptrogram_result["vmin"],
+                self.cesptrogram_result["vmax"],
+                self.cesptrogram_result["metric"]
+            )
 
     def save_coordinates(self):
         # print(self.cesptrogram_result)

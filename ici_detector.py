@@ -12,7 +12,7 @@ from geographiclib.geodesic import Geodesic
 from PySide6.QtWidgets import (
     QApplication, QWidget, QTextEdit, QVBoxLayout, QCheckBox,
     QHBoxLayout, QPushButton, QLabel, QLineEdit, QFrame, QComboBox, QGroupBox,
-    QSizePolicy, QFileDialog, QTabWidget, QTableWidget, QHeaderView, QTableWidgetItem
+    QSizePolicy, QFileDialog, QTabWidget, QTableWidget, QHeaderView, QTableWidgetItem, QScrollArea
 )
 from PySide6.QtCore import Slot, Signal
 
@@ -518,16 +518,10 @@ class MainWindow(QWidget):
 
 
         # Detection results plot area
-        self.detection_results_group = QGroupBox("Detection Results")
-        self.detection_results_layout = QVBoxLayout()
 
         # Create a QFrame to hold the plot
         self.detection_plot_area = self.module_detector.get_plotting_widget()
-
-        self.detection_results_layout.addWidget(self.detection_plot_area)
-
-        self.detection_results_group.setLayout(self.detection_results_layout)
-        self.whale_detection_layout.addWidget(self.detection_results_group)
+        self.whale_detection_layout.addWidget(self.detection_plot_area)
 
         # Cursor information container for the detector
         detector_cursor_info_group = self.module_detector.get_display_widget()
@@ -546,7 +540,6 @@ class MainWindow(QWidget):
         # Cursor information container
         cursor_info_group = self.module_spectrogram.get_display_widget()
         
-
         # Map plotting container
         map_plotting_group = QGroupBox("Map Plotting")
         map_plotting_layout = QVBoxLayout()

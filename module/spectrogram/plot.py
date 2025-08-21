@@ -81,6 +81,9 @@ class PlottingSpectrogramHandler(QFrame):
         self.fig, self.ax1 = plt.subplots(figsize=(15, 5))
         self.fig.patch.set_facecolor('#1e1e1e')
 
+        self.ax1.set_facecolor('k')
+
+
         # Set axes color to white
         self.ax1.spines['bottom'].set_color('white')  # Bottom border
         self.ax1.spines['top'].set_color('white')     # Top border

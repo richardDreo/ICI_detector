@@ -26,7 +26,8 @@ class DisplayIciDetector(QGroupBox):
         cursor_info_layout.addWidget(self.cursor_time_label)
 
         # Add "Quefrency" label and value
-        cursor_info_layout.addWidget(QLabel("Quefrency:"))
+        self.label_y = QLabel("Quefrency:")
+        cursor_info_layout.addWidget(self.label_y)
         self.cursor_frequency_label = QLabel("N/A")
         cursor_info_layout.addWidget(self.cursor_frequency_label)
 
@@ -84,7 +85,7 @@ class DisplayIciDetector(QGroupBox):
         # Emit the custom signal
         self.sig_save_coordinates.emit()
 
-    def update_cursor_info(self, time, frequency):
+    def update_cursor_info(self, time, label_y, y_value):
         """
         Update the cursor information displayed in the labels.
 
@@ -92,7 +93,8 @@ class DisplayIciDetector(QGroupBox):
         :param frequency: The frequency value to display.
         """
         self.cursor_time_label.setText(time)
-        self.cursor_frequency_label.setText(f"{frequency:.2f} s")
+        self.label_y.setText(label_y)
+        self.cursor_frequency_label.setText(f"{y_value:.2f} s")
 
     def update_rectangle_info(self, date_min, date_max, quef_min, quef_max):
         """

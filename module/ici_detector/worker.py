@@ -59,12 +59,14 @@ class WorkerIciDetector(QThread):
         q = q[0]
         cepstro = np.concatenate(cepstro, axis=1)
 
-        p2vr = self.run_p2vr_detection(q, cepstro, self.dict_params)
+        p2vr, positive_detection = self.run_p2vr_detection(q, cepstro, self.dict_params)  
+
         result = {
             'tscale': tscale,
             'q': q,
             'cepstro': cepstro,
             'p2vr': p2vr,
+            'positive': positive_detection
         }
         result.update(self.dict_params)
         self.sig_processed_detection.emit(result)
@@ -126,4 +128,11 @@ class WorkerIciDetector(QThread):
             return None, None, None
 
     def run_p2vr_detection(self, q, c, params):
-        return get_peak_to_valley_ratio(q, c, params['peak_boundaries'], params['valley_boundaries'], 12)
+
+        p2vr= get_peak_to_valley_ratio(q, c, params['peak_boundaries'], params['valley_boundaries'], 12)
+        threshold = params["p2vr_threshold"]
+        above_threshold_indices = np.where(p2vr > threshold)[0]
+        
+        positive_detection = np.zeros_like(p2vr, dtype=int)
+        positive_detection[above_threshold_indices] = 1 
+        return p2vr, positive_detection

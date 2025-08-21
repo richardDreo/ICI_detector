@@ -5,16 +5,28 @@ from matplotlib.dates import num2date
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pandas as pd
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QVBoxLayout, QFrame
+from PySide6.QtWidgets import QVBoxLayout, QFrame, QScrollArea
 
 from matplotlib.colors import Normalize
 import matplotlib.dates as mdates
 import numpy as np
 
+
+
+class ScrollableFigureCanvas(FigureCanvas):
+    def __init__(self, figure, parent_scroll_area):
+        super().__init__(figure)
+        self.parent_scroll_area = parent_scroll_area
+
+    def wheelEvent(self, event):
+        # Forward the wheel event to the parent QScrollArea
+        self.parent_scroll_area.wheelEvent(event)
+
+
 class PlottingIciDetectorHandler(QFrame):
     # Define signals for selection and cursor movement
     sig_selectionMade = Signal(str, str, float, float)  # xmin_datetime, xmax_datetime, ymin, ymax
-    sig_cursorMoved = Signal(str, float)  # x (datetime), y (quefrency)
+    sig_cursorMoved = Signal(str, str, float)  # x (datetime), ylabel, y (quefrency)
     sig_save_coordinates = Signal(dict)  # filename to save rectangle coordinates
     def __init__(self):
         """
@@ -28,38 +40,33 @@ class PlottingIciDetectorHandler(QFrame):
         self.setFrameShape(QFrame.StyledPanel)
         self.setFrameShadow(QFrame.Raised)
 
+        # Create a QScrollArea
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+
         self.fig = None
         self.ax1 = None
         self.ax2 = None
         self.ax3 = None
         # Create a new figure and canvas
-        self.fig, self.ax1 = plt.subplots(figsize=(15, 5))
+        self.fig, (self.ax1, self.ax2, self.ax3) = plt.subplots(
+            3, 1, figsize=(15, 10), gridspec_kw={'height_ratios': [2, 1, 1]}
+        )
         self.fig.patch.set_facecolor('#1e1e1e')
         # Set subplot background colors
         self.ax1.set_facecolor('#1e1e1e')
 
-        canvas = FigureCanvas(self.fig)
+        self.canvas = ScrollableFigureCanvas(self.fig, self.scroll_area)
+
+        # Add the canvas to the scroll area
+        self.scroll_area.setWidget(self.canvas)
 
         # Add the canvas to the plot_area
         layout = self.layout()
         if layout is None:
             layout = QVBoxLayout(self)
-        layout.addWidget(canvas)
+        layout.addWidget(self.scroll_area)
 
-    def clear_plot(self):
-        """Clear the existing plot area."""
-        layout = self.layout()
-        if layout is not None:
-            while layout.count():
-                child = layout.takeAt(0)
-                if child.widget():
-                    child.widget().deleteLater()
-
-        
-    # import numpy as np
-    # import numpy.ma as ma
-    # import matplotlib.dates as mdates
-    # import matplotlib.pyplot as plt
 
     def edges_from_centers(self, x):
         x = np.asarray(x, float)
@@ -107,9 +114,16 @@ class PlottingIciDetectorHandler(QFrame):
         mappable.set_array([])  # rien à afficher, mais suffisant pour la colorbar
         return mappable
 
-# --- usage ---
-# mappable = pcolormesh_blocks(self.ax1, tscale, q, cepstro, vmin=vmin, vmax=vmax, cmap='jet')
-# self.ax1.figure.colorbar(mappable, ax=self.ax1)    
+
+    def clear_plot(self):
+        """Clear the existing plot area and reset the figure and axes."""
+        if self.fig is not None:
+            # Clear the figure
+            self.fig.clf()
+            self.canvas.draw()  # Redraw the cleared canvas
+
+
+ 
     def display_cepstrogram(self, cesptrogram_result, starttime, endtime, qmin, qmax, vmin, vmax):
         """
         Plot only the cepstrogram.
@@ -125,14 +139,32 @@ class PlottingIciDetectorHandler(QFrame):
         """
         # Clear the previous plot
         self.clear_plot()
+        parent_width = self.width()
+        self.fig_width, self.fig_height = 15, 5
+        
+        # Calculate the height based on the aspect ratio of the figure
+        aspect_ratio = self.fig_height / self.fig_width
+        new_height = int(parent_width * aspect_ratio)
 
         # Extract data from the result
         tscale = cesptrogram_result['tscale']
         q = cesptrogram_result['q']
         cepstro = cesptrogram_result['cepstro']
 
-        # Create a new figure and canvas
-        self.fig, self.ax1 = plt.subplots(figsize=(15, 5))
+
+        # Reuse the existing figure and canvas
+        if self.fig is None or self.canvas is None:
+            # Create a new figure and canvas if they don't exist
+            self.fig, self.ax1 = plt.subplots(figsize=(self.fig_width, self.fig_height))
+            self.canvas = ScrollableFigureCanvas(self.fig, self.scroll_area)
+            layout = self.layout()
+            if layout is None:
+                layout = QVBoxLayout(self)
+            layout.addWidget(self.canvas)
+        else:
+            # Clear the existing figure and reuse it
+            self.fig.clf()
+            self.ax1 = self.fig.add_subplot(111)
 
         self.ax1.set_facecolor('k')
 
@@ -153,18 +185,8 @@ class PlottingIciDetectorHandler(QFrame):
         self.ax1.xaxis.label.set_color('white')  # X-axis label color
         self.ax1.yaxis.label.set_color('white')  # Y-axis label color
 
-        canvas = FigureCanvas(self.fig)
-
-
-        layout = self.layout()
-        if layout is None:
-            layout = QVBoxLayout(self)
-        layout.addWidget(canvas)
-
         # Plot the cepstrogram
         im1 = self.pcolormesh_blocks(self.ax1, tscale, q, cepstro, vmin=vmin, vmax=vmax, cmap='jet')
-        # self.ax1.figure.colorbar(mappable, ax=self.ax1)
-        # im1 = self.ax1.pcolormesh(tscale, q, cepstro, cmap='jet', vmin=vmin, vmax=vmax)
         
         divider1 = make_axes_locatable(self.ax1)
         cax1 = divider1.append_axes('right', size='2%', pad=0.01)
@@ -193,8 +215,9 @@ class PlottingIciDetectorHandler(QFrame):
         # Adjust the aspect ratio of the plot
         self.fig.tight_layout()
 
+        self.canvas.setFixedSize(parent_width, new_height)
         # Draw the canvas
-        canvas.draw()
+        self.canvas.draw()
 
         # Add rectangle selector
         self.rect_selector = RectangleSelector(
@@ -204,93 +227,6 @@ class PlottingIciDetectorHandler(QFrame):
         # Connect the mouse movement event to the callback
         self.fig.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
 
-    def display_cepstrogram_bkp(self, cesptrogram_result, starttime, endtime, qmin, qmax, vmin, vmax):
-        """
-        Plot only the cepstrogram.
-
-        Parameters:
-        - cesptrogram_result: Dictionary containing 'tscale', 'q', and 'cepstro'.
-        - starttime: Start time for the x-axis.
-        - endtime: End time for the x-axis.
-        - qmin: Minimum quefrency value for the y-axis.
-        - qmax: Maximum quefrency value for the y-axis.
-        - vmin: Minimum value for the color scale.
-        - vmax: Maximum value for the color scale.
-        """
-        # Clear the previous plot
-        self.clear_plot()
-
-        # Extract data from the result
-        tscale = cesptrogram_result['tscale']
-        q = cesptrogram_result['q']
-        cepstro = cesptrogram_result['cepstro']
-
-        # Create a new figure and canvas
-        self.fig, self.ax1 = plt.subplots(figsize=(15, 5))
-        self.fig.patch.set_facecolor('#1e1e1e')
-
-        # Set axes color to white
-        self.ax1.spines['bottom'].set_color('white')  # Bottom border
-        self.ax1.spines['top'].set_color('white')     # Top border
-        self.ax1.spines['left'].set_color('white')    # Left border
-        self.ax1.spines['right'].set_color('white')   # Right border
-
-        # Set tick parameters (color of ticks and labels)
-        self.ax1.tick_params(axis='x', colors='white')  # X-axis ticks and labels
-        self.ax1.tick_params(axis='y', colors='white')  # Y-axis ticks and labels
-
-        # Set title and label colors
-        self.ax1.title.set_color('white')  # Title color
-        self.ax1.xaxis.label.set_color('white')  # X-axis label color
-        self.ax1.yaxis.label.set_color('white')  # Y-axis label color
-
-        canvas = FigureCanvas(self.fig)
-
-
-        layout = self.layout()
-        if layout is None:
-            layout = QVBoxLayout(self)
-        layout.addWidget(canvas)
-
-        # Plot the cepstrogram
-        im1 = self.ax1.pcolormesh(tscale, q, cepstro, cmap='jet', vmin=vmin, vmax=vmax)
-        divider1 = make_axes_locatable(self.ax1)
-        cax1 = divider1.append_axes('right', size='2%', pad=0.01)
-        cbar = self.fig.colorbar(im1, cax=cax1, orientation='vertical')
-        cbar.ax.tick_params(colors='white')  # Set color of colorbar ticks and labels
-        cbar.outline.set_edgecolor('white')  # Set color of the colorbar border
-        # Limit the colorbar labels to 3 decimals
-        cbar.formatter.set_powerlimits((0, 0))
-        cbar.formatter.set_useOffset(False)
-        cbar.formatter.set_scientific(False)
-        cbar.ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:.3f}'))
-        cbar.update_ticks()
-
-
-        self.ax1.set_xlabel('Date')
-        self.ax1.set_ylabel('Quefrency (s)')
-        self.ax1.set_xlim(starttime, endtime)
-        self.ax1.set_ylim(qmin, qmax)
-
-        # Format the x-axis based on the time range
-        if (tscale[-1] - tscale[0]).total_seconds() < 48 * 3600:
-            self.ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y/%m/%d \n %H:%M'))
-        else:
-            self.ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y/%m/%d'))
-
-        # Adjust the aspect ratio of the plot
-        self.fig.tight_layout()
-
-        # Draw the canvas
-        canvas.draw()
-
-        # Add rectangle selector
-        self.rect_selector = RectangleSelector(
-            self.ax1, self.onselect_function, useblit=True, interactive=True, button=[1]
-        )
-
-        # Connect the mouse movement event to the callback
-        self.fig.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
 
     def display_detection_results(self, cesptrogram_result, starttime, endtime, qmin, qmax, vmin, vmax, metric):
         """
@@ -305,8 +241,17 @@ class PlottingIciDetectorHandler(QFrame):
         - vmin: Minimum value for the color scale.
         - vmax: Maximum value for the color scale.
         """
+
+        parent_width = self.width()
+
+
         # Clear the previous plot
         self.clear_plot()
+        self.fig_width, self.fig_height = 15, 10
+        
+        # Calculate the height based on the aspect ratio of the figure
+        aspect_ratio = self.fig_height / self.fig_width
+        new_height = int(parent_width * aspect_ratio)
 
         # Extract data from the result
         tscale = cesptrogram_result['tscale']
@@ -315,25 +260,55 @@ class PlottingIciDetectorHandler(QFrame):
         p2vr = cesptrogram_result['p2vr']
         positive = cesptrogram_result['positive']
 
-        # Create a new figure and canvas
-        self.fig, (self.ax1, self.ax2, self.ax3) = plt.subplots(
-            3, 1, figsize=(15, 10), gridspec_kw={'height_ratios': [2, 1, 1]}
-        )
-        canvas = FigureCanvas(self.fig)
+        
 
 
-        layout = self.layout()
-        if layout is None:
-            layout = QVBoxLayout(self)
-        layout.addWidget(canvas)
+        # Reuse the existing figure and canvas
+        if self.fig is None or self.canvas is None:
+            # Create a new figure and canvas if they don't exist
+            self.fig, (self.ax1, self.ax2, self.ax3) = plt.subplots(
+            3, 1, figsize=(self.fig_width, self.fig_height), gridspec_kw={'height_ratios': [2, 1, 1]}
+            )
+            self.fig, self.ax1 = plt.subplots(figsize=(self.fig_width, self.fig_height))
+            self.canvas = ScrollableFigureCanvas(self.fig, self.scroll_area)
+            layout = self.layout()
+            if layout is None:
+                layout = QVBoxLayout(self)
+            layout.addWidget(self.canvas)
+        else:
+            # Clear the existing figure and reuse it
+            self.fig.clf()
+            self.ax1, self.ax2, self.ax3 = self.fig.subplots(
+                3, 1, gridspec_kw={'height_ratios': [2, 1, 1]}
+            )
 
-        # Plot the cepstrogram
+
+        for ax in [self.ax1, self.ax2, self.ax3]:
+            # Set axes color to white
+            ax.spines['bottom'].set_color('white')  # Bottom border
+            ax.spines['top'].set_color('white')     # Top border
+            ax.spines['left'].set_color('white')    # Left border
+            ax.spines['right'].set_color('white')   # Right border
+
+            # Set tick parameters (color of ticks and labels)
+            ax.tick_params(axis='x', colors='white')  # X-axis ticks and labels
+            ax.tick_params(axis='y', colors='white')  # Y-axis ticks and labels
+
+            # Set title and label colors
+            ax.title.set_color('white')  # Title color
+            ax.xaxis.label.set_color('white')  # X-axis label color
+            ax.yaxis.label.set_color('white')  # Y-axis label color
+        self.ax1.set_facecolor('k')
+
+
+        self.canvas.setFixedSize(parent_width, new_height)
+
 
         im1 = self.ax1.pcolormesh(tscale, q, cepstro, cmap='jet', vmin=vmin, vmax=vmax)
         divider1 = make_axes_locatable(self.ax1)
         cax1 = divider1.append_axes('right', size='2%', pad=0.01)
         self.fig.colorbar(im1, cax=cax1, orientation='vertical')
-        self.ax1.set_xlabel('Date')
+        # self.ax1.set_xlabel('Date')
         self.ax1.set_ylabel('Quefrency (s)')
         self.ax1.set_xlim(starttime, endtime)
         self.ax1.set_ylim(qmin, qmax)
@@ -348,7 +323,7 @@ class PlottingIciDetectorHandler(QFrame):
         self.ax2.plot(tscale, p2vr, label='p2vr', color='blue')
         self.ax2.grid()
         self.ax2.set_ylim(0,)
-        self.ax2.set_xlabel('Date')
+        # self.ax2.set_xlabel('Date')
         self.ax2.set_ylabel('p2vr')
         self.ax2.set_xlim(starttime, endtime)
         self.ax2.legend()
@@ -371,7 +346,7 @@ class PlottingIciDetectorHandler(QFrame):
         self.ax3.set_xlim(starttime, endtime)
         self.ax3.grid()
         self.ax3.set_ylim(0, 25)
-        self.ax3.set_xlabel('Date')
+        # self.ax3.set_xlabel('Date')
         self.ax3.set_ylabel('Positive Hours')
         self.ax3.legend()
 
@@ -384,7 +359,7 @@ class PlottingIciDetectorHandler(QFrame):
         self.fig.tight_layout()
 
         # Draw the canvas
-        canvas.draw()
+        self.canvas.draw()
 
         # Add rectangle selector
         self.rect_selector = RectangleSelector(
@@ -422,13 +397,18 @@ class PlottingIciDetectorHandler(QFrame):
         Parameters:
         - event: The Matplotlib MouseEvent.
         """
-        if event.inaxes == self.ax1:
-            x, y = event.xdata, event.ydata
-            if x is not None and y is not None:
-                
-                x_datetime = pd.to_datetime(x, unit='D', origin='1970-01-01').strftime('%Y/%m/%d %H:%M')
-                self.sig_cursorMoved.emit(x_datetime, y)
-
+        y_label = ''
+        x, y = event.xdata, event.ydata
+        if x is not None and y is not None:
+            if event.inaxes == self.ax1:
+                y_label = 'Quefrency:'
+            elif event.inaxes == self.ax2:
+                y_label = 'p2vr:'
+            elif event.inaxes == self.ax3:
+                y_label = 'Positive:'
+            
+            x_datetime = pd.to_datetime(x, unit='D', origin='1970-01-01').strftime('%Y/%m/%d %H:%M')
+            self.sig_cursorMoved.emit(x_datetime, y_label, y)
 
     def save_rectangle_coordinates(self):
         self.sig_selectionMade.emit(self.rectangle_info)

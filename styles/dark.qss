@@ -40,6 +40,15 @@ QPushButton {
     padding: 5px 10px;
 }
 
+/* Button Styling */
+QRadioButton {
+    background-color: #3c3c3c;
+    color: #d4d4d4;
+    border: 1px solid #3c3c3c;
+    border-radius: 3px;
+    padding: 5px 10px;
+}
+
 QPushButton:hover {
     background-color: #505050;
 }

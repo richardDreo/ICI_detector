@@ -82,6 +82,21 @@ class ParametersWidgetDetector(QWidget):
         self.valley_boundaries_edit = self._create_labeled_line_edit("Valley Boundaries:", p2vr_parameters_layout)
         self.threshold_edit = self._create_labeled_line_edit("Threshold:", p2vr_parameters_layout, "0.5")
 
+        # Radio buttons for display options
+        display_options_group = QGroupBox()
+        display_options_layout = QHBoxLayout()
+        display_options_layout.setContentsMargins(0, 0, 0, 0)  # Remove vertical margins
+        self.cepstrogram_radio = QRadioButton("Cepstrogram")
+        self.detection_results_radio = QRadioButton("Detection Results")
+        self.detection_results_radio.setChecked(True)  # Default to Cepstrogram
+
+        display_options_layout.addWidget(self.cepstrogram_radio)
+        display_options_layout.addWidget(self.detection_results_radio)
+        display_options_group.setLayout(display_options_layout)
+        display_options_group.setVisible(False)
+        p2vr_parameters_layout.addWidget(display_options_group)
+
+
         apply_p2vr_button = QPushButton("Apply p2vr Parameters")
         apply_p2vr_button.clicked.connect(self.sig_applyP2vrRequested.emit)
         p2vr_parameters_layout.addWidget(apply_p2vr_button)
@@ -109,19 +124,7 @@ class ParametersWidgetDetector(QWidget):
 
         dynamic_parameters_layout.addLayout(qmin_qmax_hbox)
 
-        # Radio buttons for display options
-        display_options_group = QGroupBox("Display Options")
-        display_options_layout = QHBoxLayout()
-
-        self.cepstrogram_radio = QRadioButton("Cepstrogram")
-        self.detection_results_radio = QRadioButton("Detection Results")
-        self.cepstrogram_radio.setChecked(True)  # Default to Cepstrogram
-
-        display_options_layout.addWidget(self.cepstrogram_radio)
-        display_options_layout.addWidget(self.detection_results_radio)
-        display_options_group.setLayout(display_options_layout)
-        display_options_group.setVisible(False)
-        dynamic_parameters_layout.addWidget(display_options_group)
+        
         refresh_plot_button = QPushButton("Refresh Plot")
         refresh_plot_button.clicked.connect(self.sig_refreshPlotRequested.emit)
         dynamic_parameters_layout.addWidget(refresh_plot_button)
