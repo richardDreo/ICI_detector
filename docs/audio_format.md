@@ -6,12 +6,13 @@ This document describes the required audio data format and directory structure e
 
 FILE FORMAT REQUIREMENTS
 
-- Format: MiniSEED (.mseed) or FLAC (.flac)
+- Format: MiniSEED (.mseed)
 - Sampling rate: 250 Hz (recommanded).
   Recommended: keep the sampling rate below 300 Hz to avoid large files and improve processing speed.
 - Channels: Single channel per file (1 component only)
 - Duration: 1 full day per file
   It is recommended to include a 3-minute overlap with the previous and next day to avoid the loss of samples.
+- Duty cycle recordings: when acquisition is performed in duty cycle mode, create one Trace per acquisition cycle within the day.  
 
 ---
 
@@ -42,9 +43,9 @@ VALIDATION CHECKLIST
 
 Before using the files in the application:
 
-- Files are in .mseed or .flac format
+- Files are in .mseed format
 - Sampling rate is exactly 250 Hz
-- Each file is 24h long
+- Each file corresponds to a day
 - File names and paths follow the SDS format
 - Files are organized into SDS-compliant folders
 - (Recommended) Files include a 3-minute overlap with previous/next day

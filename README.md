@@ -10,7 +10,7 @@ The tool enables efficient visualization, parameter tuning, and analysis of larg
 * 🗺️ **Geographic Visualization** – Network station visualization with Cartopy
 * 📂 **Batch Data Processing** – Handle large sets of structured audio data
 * 🎧 **Spectrogram Visualization** – Explore acoustic data with spectrograms
-* 📈 **ICI Analysis** – Detect/extract ICI using advanced signal processing
+* 📈 **ICI Analysis** – Extract ICI using cepstrogram based signal processing
 * 🛠️ **Parameter Customization** – Adjust detection parameters via GUI widgets
 
 ---
@@ -55,6 +55,18 @@ source env_detector/bin/activate
 
 ```bash
 pip install -r requirements.txt --no-deps
+
+---
+
+## 📄 Audio File Requirements
+
+This application expects input audio files in **MiniSEED format** and **SDS-compliant directory structure**, with a sampling rate of 250 Hz and 24h duration per file.
+
+## Before running the code
+-> Set the paths to SDS root folder, and Inventories root Folder in the ./config/config.json
+
+📘 See full details here:
+**[`docs/audio_format.md`](docs/audio_format.md)**
 ```
 
 ---
@@ -123,18 +135,6 @@ ICI_detector/
 └── requirements.txt       # Dependency list
 
 ```
-
----
-
-## 📄 Audio File Requirements
-
-This application expects input audio files in **MiniSEED format** and **SDS-compliant directory structure**, with a sampling rate of 250 Hz and 24h duration per file.
-
-## Before running the code
--> Set the paths to SDS root folder, and Inventories root Folder in the ./config/config.json
-
-📘 See full details here:
-**[`docs/audio_format.md`](docs/audio_format.md)**
 
 ---
 

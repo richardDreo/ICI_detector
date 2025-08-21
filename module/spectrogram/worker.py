@@ -41,6 +41,11 @@ class WorkerSpectrogram(QThread):
         results = [f.result() for f in concurrent.futures.as_completed(futures) if f.result() is not None]
         if not results:
             return
+        # Calculate the expected number of frequency bins
+        expected_shape = self.dict_params['fftsize'] // 2 + 1
+
+        # Filter results based on the expected shape
+        results = [r for r in results if r is not None and len(r) > 2 and r[2].shape[0] == expected_shape]
 
         results.sort(key=lambda x: x[0][0])
         tscale, f, slog = zip(*results)
