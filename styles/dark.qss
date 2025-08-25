@@ -158,3 +158,10 @@ QProgressBar::chunk {
 QCheckBox {
     color: white; /* Set the text color to white */
 }
+
+
+#DisplayWidgetDetector,#DisplayWidgetSpectrogram {
+    margin: 0px;
+    padding: 0px;
+    /* background-color: red; */
+}

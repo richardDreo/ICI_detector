@@ -7,7 +7,7 @@ class DisplaySpectrogram(QGroupBox):
 
         :param parent: Parent widget (optional).
         """
-        super().__init__("Cursor Information", parent)
+        super().__init__(None, parent)
 
         # Create the layout for the group box
         cursor_info_layout = QHBoxLayout()
@@ -25,6 +25,9 @@ class DisplaySpectrogram(QGroupBox):
         # Set the layout for the group box
         self.setLayout(cursor_info_layout)
 
+        cursor_info_layout.setContentsMargins(1, 1, 1, 1)  # Remove all margins inside the layout
+        cursor_info_layout.setSpacing(0) 
+
         # Set the size policy
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
@@ -37,3 +40,13 @@ class DisplaySpectrogram(QGroupBox):
         """
         self.cursor_time_label.setText(time)
         self.cursor_frequency_label.setText(f"{frequency:.2f} Hz")
+
+    def toggle_visibility(self):
+        """
+        Toggle the visibility of the QGroupBox and its child widgets.
+        """
+        # Get the current visibility status
+        visible_status = self.isVisible()
+
+        # Toggle the visibility
+        self.setVisible(not visible_status)

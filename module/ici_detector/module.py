@@ -31,7 +31,7 @@ class ModuleIciDetector(QObject):
         self.display = DisplayIciDetector()
         self.worker = WorkerIciDetector()
         self.parameterWidget = ParametersWidgetDetector()
-        
+        self.display.setObjectName("DisplayWidgetDetector")
 
         self.set_connections()
 

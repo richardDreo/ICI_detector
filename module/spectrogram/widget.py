@@ -115,6 +115,7 @@ class ParameterWidgetSpectrogram(QWidget):
         self.freq_shift_fmax_edit.textChanged.connect(self.update_parameters)
         self.freq_shift_fmin_edit.textChanged.connect(self.update_parameters)
 
+        # self.setStyleSheet("background-color: red; margin: 0px; padding: 0px;")
     def update_parameters(self):
         self.get_number_of_spectra(self.starttime, self.endtime)
         
@@ -205,3 +206,16 @@ class ParameterWidgetSpectrogram(QWidget):
         self.num_spectra=num_spectra
         self.sig_number_of_spectra.emit(num_spectra)
         return num_spectra
+
+
+
+
+    def toggle_visibility(self):
+        """
+        Toggle the visibility of the QGroupBox and its child widgets.
+        """
+        # Get the current visibility status
+        visible_status = self.isVisible()
+
+        # Toggle the visibility
+        self.setVisible(not visible_status)

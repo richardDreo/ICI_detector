@@ -22,6 +22,7 @@ class ModuleSpectrogram(QObject):
         self.display = DisplaySpectrogram()
         self.worker = WorkerSpectrogram()
         self.parameterWidget = ParameterWidgetSpectrogram()
+        self.display.setObjectName("DisplayWidgetSpectrogram")
         # self.plotting_spectrogram_handler.cursorMoved.connect(self.handle_spectro_cursor_move)
         self.set_connections()
 

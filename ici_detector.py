@@ -12,10 +12,10 @@ from geographiclib.geodesic import Geodesic
 from PySide6.QtWidgets import (
     QApplication, QWidget, QTextEdit, QVBoxLayout, QCheckBox,
     QHBoxLayout, QPushButton, QLabel, QLineEdit, QFrame, QComboBox, QGroupBox,
-    QSizePolicy, QFileDialog, QTabWidget, QTableWidget, QHeaderView, QTableWidgetItem, QScrollArea
+    QSizePolicy, QFileDialog, QTabWidget, QTableWidget, QHeaderView, QTableWidgetItem
 )
 from PySide6.QtCore import Slot, Signal
-
+from PySide6.QtGui import QKeySequence, QShortcut
 # === Librairies internes ===
 from lib.whaleIciDetection import (
     get_preset_parameters
@@ -284,6 +284,14 @@ class MainWindow(QWidget):
     def slot_number_of_spectra(self, num_spectra):
         self.num_spectra_label.setText(f"Estimated Number of Spectra: {num_spectra}")
 
+
+
+    def toggle_controls_visibility(self):
+        """
+        Toggle the visibility of the controls widget.
+        """
+        self.module_detector.get_parameter_widget().toggle_visibility()
+        self.module_spectrogram.get_parameter_widget().toggle_visibility()
 
     def bdd_table_update(self):
         try:
@@ -601,6 +609,11 @@ class MainWindow(QWidget):
         self.plot_network_map()
         update_time_fields()
         self.setLayout(main_layout)
+
+        print(self.module_detector.parameterWidget.objectName())  # Should print "ParametersWidgetDetector"
+        print(self.module_spectrogram.parameterWidget.objectName())  # Should print "ParametersWidgetSpectrogram"
+        self.toggle_shortcut = QShortcut(QKeySequence("Ctrl+B"), self)
+        self.toggle_shortcut.activated.connect(self.toggle_controls_visibility)
 
 
 

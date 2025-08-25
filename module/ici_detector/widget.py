@@ -323,3 +323,15 @@ class ParametersWidgetDetector(QWidget):
         elif self.detection_results_radio.isChecked():
             return "detection_results"
         return None  # Return None if no option is selected
+
+
+
+    def toggle_visibility(self):
+        """
+        Toggle the visibility of the QGroupBox and its child widgets.
+        """
+        # Get the current visibility status
+        visible_status = self.isVisible()
+
+        # Toggle the visibility
+        self.setVisible(not visible_status)

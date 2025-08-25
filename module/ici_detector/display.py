@@ -1,7 +1,7 @@
-from PySide6.QtWidgets import QPushButton, QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy
+from PySide6.QtWidgets import QPushButton, QWidget, QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy
 from PySide6.QtCore import Signal
 
-class DisplayIciDetector(QGroupBox):
+class DisplayIciDetector(QWidget):
     sig_save_coordinates = Signal()
 
     def __init__(self, parent=None):
@@ -10,20 +10,23 @@ class DisplayIciDetector(QGroupBox):
 
         :param parent: Parent widget (optional).
         """
-        super().__init__(None, parent)
+        super().__init__(parent)
 
         # Main layout for the group box
         main_layout = QVBoxLayout()
 
         # 1st QGroupBox: Cursor Information
-        self.cursor_info_group = QGroupBox("Cursor Information")
+        self.cursor_info_group = QWidget()
 
         cursor_info_layout = QHBoxLayout()
 
         # Add "Date" label and value
+        cursor_info_layout.addWidget(QLabel("Cursor Information => "))
+        cursor_info_layout.addStretch()
         cursor_info_layout.addWidget(QLabel("Date:"))
         self.cursor_time_label = QLabel("N/A")
         cursor_info_layout.addWidget(self.cursor_time_label)
+        cursor_info_layout.addStretch()
 
         # Add "Quefrency" label and value
         self.label_y = QLabel("Quefrency:")
@@ -34,8 +37,11 @@ class DisplayIciDetector(QGroupBox):
         self.cursor_info_group.setLayout(cursor_info_layout)
 
         # 2nd QGroupBox: Rectangle Selection Information
-        self.rect_info_group = QGroupBox("Rectangle Selection Information")
+        self.rect_info_group = QWidget()
+        
         rect_main_layout = QHBoxLayout()
+        rect_main_layout.addWidget(QLabel("Selection Information =>"))
+        rect_main_layout.addStretch()
 
         # Horizontal layout for Date labels
         date_layout = QHBoxLayout()
@@ -77,6 +83,20 @@ class DisplayIciDetector(QGroupBox):
 
         # Set the main layout for the group box
         self.setLayout(main_layout)
+        main_layout.setContentsMargins(1, 1, 1, 1)  # Remove all margins inside the layout
+        main_layout.setSpacing(0) 
+        cursor_info_layout.setContentsMargins(0, 0, 0, 0)
+        cursor_info_layout.setSpacing(0) 
+        
+        rect_main_layout.setContentsMargins(0, 0, 0, 0)
+        rect_main_layout.setSpacing(0) 
+        
+        date_layout.setContentsMargins(0, 0, 0, 0)
+        date_layout.setSpacing(0) 
+        
+        quefrency_layout.setContentsMargins(0, 0, 0, 0)
+        quefrency_layout.setSpacing(0) 
+
 
         # Set the size policy
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
@@ -110,3 +130,14 @@ class DisplayIciDetector(QGroupBox):
         self.rect_quef_min_label.setText(f"{quef_min:.2f} s")
         self.rect_quef_max_label.setText(f"{quef_max:.2f} s")
 
+
+
+    def toggle_visibility(self):
+        """
+        Toggle the visibility of the QGroupBox and its child widgets.
+        """
+        # Get the current visibility status
+        visible_status = self.isVisible()
+
+        # Toggle the visibility
+        self.setVisible(not visible_status)
