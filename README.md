@@ -55,7 +55,7 @@ source env_detector/bin/activate
 
 ```bash
 pip install -r requirements.txt --no-deps
-
+```
 ---
 
 ## 📄 Audio File Requirements
@@ -67,7 +67,7 @@ This application expects input audio files in **MiniSEED format** and **SDS-comp
 
 📘 See full details here:
 **[`docs/audio_format.md`](docs/audio_format.md)**
-```
+
 
 ---
 
