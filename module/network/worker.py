@@ -8,6 +8,10 @@ class NetworkManager:
         self.data_path = data_path
         self.dfstations = pd.DataFrame()
         self.dfmseeds = pd.DataFrame()
+        print('NetworkManager init...')
+        print(f'inventory_path : {inventory_path}')
+        print(f'data_path : {data_path}', data_path)
+
 
     def load_metadata(self, network: str = '*', station: str = '*'):
         """
@@ -18,10 +22,17 @@ class NetworkManager:
 
         self.dfmseeds = get_network_file_list(network, station, self.data_path)
         self.dfmseeds['cha'] = self.dfmseeds['cha'].str.split('.').str[0]
+
+        print("Loading metadata...")
+        print(f"Stations loaded: {len(self.dfstations)}")
+        print(f"Mseed files: {len(self.dfmseeds)}")
         return self.dfstations, self.dfmseeds
 
     def get_stations_by_network(self, network: str):
-        return self.dfmseeds[self.dfmseeds['net'] == network]['sta'].unique().tolist()
+        print(f"Getting stations for network: {network}")
+        stations = self.dfmseeds[self.dfmseeds['net'] == network]['sta'].unique().tolist()
+        print(f"Stations for {network}: {stations}")
+        return stations
 
     def get_channels_by_station(self, network: str, station: str):
         channels = self.dfmseeds[

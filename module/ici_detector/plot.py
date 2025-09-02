@@ -332,6 +332,10 @@ class PlottingIciDetectorHandler(QFrame):
         divider2 = make_axes_locatable(self.ax2)
         cax2 = divider2.append_axes('right', size='2%', pad=0.01)
         cax2.set_visible(False)
+        if (tscale[-1] - tscale[0]).total_seconds() < 48 * 3600:
+            self.ax2.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y/%m/%d \n %H:%M'))
+        else:
+            self.ax2.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y/%m/%d'))
 
         # Adjust the positive hours calculation based on the metric
         metric_dict = {"5mn": "5T", "15mn": "15T", "1H": "1H"}
@@ -349,6 +353,10 @@ class PlottingIciDetectorHandler(QFrame):
         # self.ax3.set_xlabel('Date')
         self.ax3.set_ylabel('Positive Hours')
         self.ax3.legend()
+        if (tscale[-1] - tscale[0]).total_seconds() < 48 * 3600:
+            self.ax3.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y/%m/%d \n %H:%M'))
+        else:
+            self.ax3.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y/%m/%d'))
 
         # Ensure the third plot has the same width as the first
         divider3 = make_axes_locatable(self.ax3)
