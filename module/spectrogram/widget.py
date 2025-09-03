@@ -10,9 +10,10 @@ from functools import partial
 
 class ParameterWidgetSpectrogram(QWidget):
     sig_computeSpectrogramRequested = Signal()
-    parametersModified = Signal()
+    # parametersModified = Signal()
     refreshPlotRequested = Signal()
     sig_number_of_spectra = Signal(int)
+    
     def __init__(self, parent=None):
         super().__init__(parent)
 

@@ -11,8 +11,6 @@ from lib.whaleIciDetection import get_mean_cepstrum, get_peak_to_valley_ratio
 
 class WorkerIciDetector(QThread):
     progress = Signal(int)
-    data_ready = Signal(pd.DataFrame, pd.DataFrame)
-    processed_data_ready = Signal(dict, dict)
     sig_processed_detection = Signal(dict)
 
     def __init__(self, parent=None):

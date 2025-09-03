@@ -218,7 +218,6 @@ class MainWindow(QWidget):
     def display_trajectory_plots(self):
         return
 
-   
     def is_valid_date(self, date_text, date_format):
         """
         Validate if the given date_text matches the expected date_format.
@@ -357,7 +356,6 @@ class MainWindow(QWidget):
         self.module_detector = ModuleIciDetector()
         self.sig_set_dates.connect(self.module_detector.set_dates)
         self.module_detector.worker.progress.connect(self.update_progress_detector)
-        self.module_detector.worker.sig_processed_detection.connect(self.module_detector.get_detection_result)
 
         self.file_path='bdd.csv'
         self.module_bdd = ManualSelectionHandler(self.file_path)

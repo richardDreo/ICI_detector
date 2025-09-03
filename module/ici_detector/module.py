@@ -9,10 +9,6 @@ import pandas as pd
 
 
 class ModuleIciDetector(QObject):
-    # sig_request_files_to_process = Signal()
-    sig_request_data_for_processing = Signal()
-    sig_setting_received = Signal(dict)
-    sig_progress = Signal(int, int)
     sig_new_selection_to_save= Signal(dict)
 
     def set_connections(self):

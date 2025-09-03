@@ -9,9 +9,9 @@ from PySide6.QtWidgets import QMessageBox
 
 class ModuleSpectrogram(QObject):
     # sig_request_files_to_process = Signal()
-    sig_request_data_for_processing = Signal()
-    sig_setting_received = Signal(dict)
-    sig_progress = Signal(int, int)
+    # sig_request_data_for_processing = Signal()
+    # sig_setting_received = Signal(dict)
+    # sig_progress = Signal(int, int)
 
     def set_connections(self):
         self.plotter.cursorMoved.connect(self.display.update_cursor_info)

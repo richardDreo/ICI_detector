@@ -71,7 +71,7 @@ class DisplayIciDetector(QWidget):
         rect_main_layout.addStretch()
         # Add a QPushButton to save rectangle coordinates
         self.save_button = QPushButton("Save Coordinates")
-        # self.sig_save_coordinates = Signal()
+
         self.save_button.clicked.connect(self.on_save_button_clicked)
         rect_main_layout.addWidget(self.save_button)
 

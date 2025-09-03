@@ -75,8 +75,8 @@ class WorkerSpectrogram(QThread):
                 dict_params['integration'],
                 dict_params['dem_boundaries']
             )
-            self.progress.emit(self.counter)
             self.counter += 1
+            self.progress.emit(self.counter)
             return t, f, 120 + 10 * np.log10(np.abs(s))
         except Exception as e:
             print(f"Error in process_file: {e}")
