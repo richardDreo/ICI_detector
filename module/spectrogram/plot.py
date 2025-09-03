@@ -50,6 +50,7 @@ class PlottingSpectrogramHandler(QFrame):
         """Clear the existing plot area."""
         layout = self.layout()
         if layout is not None:
+            self.fig.canvas.mpl_disconnect('motion_notify_event')
             while layout.count():
                 child = layout.takeAt(0)
                 if child.widget():

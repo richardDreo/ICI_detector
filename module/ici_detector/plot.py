@@ -48,6 +48,7 @@ class PlottingIciDetectorHandler(QFrame):
         self.ax1 = None
         self.ax2 = None
         self.ax3 = None
+
         # Create a new figure and canvas
         self.fig, (self.ax1, self.ax2, self.ax3) = plt.subplots(
             3, 1, figsize=(15, 10), gridspec_kw={'height_ratios': [2, 1, 1]}
@@ -119,6 +120,7 @@ class PlottingIciDetectorHandler(QFrame):
         """Clear the existing plot area and reset the figure and axes."""
         if self.fig is not None:
             # Clear the figure
+            self.fig.canvas.mpl_disconnect('motion_notify_event')
             self.fig.clf()
             self.canvas.draw()  # Redraw the cleared canvas
 

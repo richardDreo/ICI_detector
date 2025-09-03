@@ -144,7 +144,8 @@ class ParametersWidgetDetector(QWidget):
             self.valley_boundaries_edit.setText(str(species_params['valley_boundaries']))
 
         self.species_combo.currentIndexChanged.connect(update_parameters)
-        self.species_combo.currentIndexChanged.connect(self.parametersUpdated.emit)
+        # self.species_combo.currentIndexChanged.connect(self.parametersUpdated.emit)
+        self.species_combo.currentIndexChanged.connect(lambda: self.parametersUpdated.emit())
         update_parameters()  # Initialize with the first species' parameters
 
         self.setLayout(main_layout)

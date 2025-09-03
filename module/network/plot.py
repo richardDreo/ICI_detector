@@ -14,7 +14,8 @@ class MapPlotter:
         - map_plot_area: The QWidget where the map will be displayed.
         """
         self.map_plot_area = map_plot_area
-        
+        self.fig = None
+        self.canvas = None
 
     def clear_plot_area(self):
         """
@@ -27,10 +28,16 @@ class MapPlotter:
             while layout.count():
                 child = layout.takeAt(0)
                 if child.widget():
-                    child.widget().deleteLater()
+                    widget = child.widget()
+                    # Disconnect signals and delete the widget
+                    if isinstance(widget, FigureCanvas):
+                        widget.figure.canvas.mpl_disconnect('motion_notify_event')
+                        plt.close(widget.figure)
+                    widget.deleteLater()
         return layout
 
     def plot_network_map(self, network_stations, selected_station, network_coords):
+        
         """
         Plot the network map with Cartopy.
 
@@ -39,20 +46,34 @@ class MapPlotter:
         - selected_station: The currently selected station.
         - network_coords: Tuple containing (lonmin, lonmax, latmin, latmax).
         """
+        # Clear the previous plot
         layout = self.clear_plot_area()
 
-        # Create a new figure and canvas
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 3), subplot_kw={'projection': ccrs.PlateCarree()})
-        canvas = FigureCanvas(fig)
-        fig.patch.set_facecolor('#1e1e1e')
-        # Add the canvas to the map_plot_area
-        layout.addWidget(canvas)
+        # Close the previous figure if it exists
+        if hasattr(self, 'fig') and self.fig is not None:
+            plt.close(self.fig)
 
+        if hasattr(self, 'canvas') and self.canvas is not None:
+            self.canvas.setParent(None)  # Detach from the layout
+            del self.canvas  # Delete the old canvas
+
+        # Create a new figure and canvas
+        self.fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 3), subplot_kw={'projection': ccrs.PlateCarree()})
+        self.canvas = FigureCanvas(self.fig)
+        self.fig.patch.set_facecolor('#1e1e1e')
+
+        # Add the canvas to the map_plot_area
+        layout.addWidget(self.canvas)
+        
         # Plot the world-scale map on the first subplot
         ax1.set_extent([-180, 180, -90, 90], crs=ccrs.PlateCarree())
         ax1.add_feature(cfeature.LAND)
         ax1.add_feature(cfeature.OCEAN)
         ax1.add_feature(cfeature.COASTLINE)
+        
+        if network_stations.empty:
+            return
+
         try:
             if not network_stations.empty:
                 lons = network_stations['lon'].values
@@ -89,10 +110,14 @@ class MapPlotter:
                 active_lon = active_station['lon'].values[0]
                 active_lat = active_station['lat'].values[0]
                 ax2.scatter(active_lon, active_lat, color='black', s=3, transform=ccrs.PlateCarree(), label='Active Station')
-        except:
-            print("Error plotting station names or coordinates.")
-        # Adjust the spacing between subplots
-        fig.subplots_adjust(wspace=1)
-        fig.tight_layout()
-        canvas.draw()
+        except KeyError as e:
+            print(f"KeyError_Net: {e}")
+        except ValueError as e:
+            print(f"ValueError_Net: {e}")
+        except Exception as e:
+            print(f"Unexpected error_Net: {e}")
 
+        # Adjust the spacing between subplots
+        self.fig.subplots_adjust(wspace=1)
+        self.fig.tight_layout()
+        self.canvas.draw()

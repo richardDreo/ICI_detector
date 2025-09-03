@@ -219,16 +219,40 @@ class MainWindow(QWidget):
         return
 
    
+    def is_valid_date(self, date_text, date_format):
+        """
+        Validate if the given date_text matches the expected date_format.
+
+        Parameters:
+        - date_text: The date string to validate.
+        - date_format: The expected date format.
+
+        Returns:
+        - True if the date_text matches the date_format, False otherwise.
+        """
+        try:
+            datetime.strptime(date_text, date_format)
+            return True
+        except ValueError:
+            return False
+        
 
     def update_dates(self):
         try:
+            # Validate the date format using a helper function
+            if not self.is_valid_date(self.starttime_edit.text(), '%Y/%m/%d %H:%M') or \
+            not self.is_valid_date(self.endtime_edit.text(), '%Y/%m/%d %H:%M'):
+                return  # Exit the method if the format is invalid
+
+            # Parse the dates
             starttime = datetime.strptime(self.starttime_edit.text(), '%Y/%m/%d %H:%M')
             endtime = datetime.strptime(self.endtime_edit.text(), '%Y/%m/%d %H:%M')
 
+            # Emit the signal with the parsed dates
             self.sig_set_dates.emit(starttime, endtime)
             
         except Exception as e:
-            print("Error in calculating spectra")
+            print("Error in sig_set_dates:", e)
 
     @Slot(dict, dict)
     def handle_processed_data_ready(self, processed_data, processed_spectrograms):
@@ -393,11 +417,14 @@ class MainWindow(QWidget):
             channels = [channel.split('.')[0] for channel in channels]
             self.channel_combo.clear()
             self.channel_combo.addItems(channels)
-            sel = self.dfstations[(self.dfstations['sta'] == self.station_combo.currentText())&(self.dfstations['cha'] == self.channel_combo.currentText())]['sample_rate']
-            sample_rate = sel.values[0]
-            self.spectrogram_parameter_widget.set_freq_shift_range(0, sample_rate * 0.5)
-            self.spectrogram_parameter_widget.set_frequency_range(0, sample_rate * 0.5)
-            # self.spectrogram_parameter_widget.set_sample_rate(sample_rate)
+            if channels:  # Ensure the list is not empty
+                self.channel_combo.setCurrentText(channels[0])  # Set the first item as the current text
+
+                sel = self.dfstations[(self.dfstations['sta'] == self.station_combo.currentText())&(self.dfstations['cha'] == self.channel_combo.currentText())]['sample_rate']
+                sample_rate = sel.values[0]
+                self.spectrogram_parameter_widget.set_freq_shift_range(0, sample_rate * 0.5)
+                self.spectrogram_parameter_widget.set_frequency_range(0, sample_rate * 0.5)
+
         self.station_combo.currentIndexChanged.connect(update_channels)
 
         start_time_layout = QHBoxLayout()
@@ -606,7 +633,8 @@ class MainWindow(QWidget):
 
         self.report_generator = ReportGenerator(self.global_figures_area)
 
-        self.plot_network_map()
+
+        # self.plot_network_map()
         update_time_fields()
         self.setLayout(main_layout)
 
