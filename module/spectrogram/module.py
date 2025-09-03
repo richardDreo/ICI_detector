@@ -2,16 +2,12 @@ from module.spectrogram.widget import ParameterWidgetSpectrogram
 from module.spectrogram.worker import WorkerSpectrogram
 from module.spectrogram.plot import PlottingSpectrogramHandler
 from module.spectrogram.display import DisplaySpectrogram
-from PySide6.QtCore import Signal, QObject
+from PySide6.QtCore import QObject
 import numpy as np
 import pandas as pd
 from PySide6.QtWidgets import QMessageBox
 
 class ModuleSpectrogram(QObject):
-    # sig_request_files_to_process = Signal()
-    # sig_request_data_for_processing = Signal()
-    # sig_setting_received = Signal(dict)
-    # sig_progress = Signal(int, int)
 
     def set_connections(self):
         self.plotter.cursorMoved.connect(self.display.update_cursor_info)
@@ -23,7 +19,6 @@ class ModuleSpectrogram(QObject):
         self.worker = WorkerSpectrogram()
         self.parameterWidget = ParameterWidgetSpectrogram()
         self.display.setObjectName("DisplayWidgetSpectrogram")
-        # self.plotting_spectrogram_handler.cursorMoved.connect(self.handle_spectro_cursor_move)
         self.set_connections()
 
     def get_display_widget(self):
@@ -94,12 +89,7 @@ class ModuleSpectrogram(QObject):
 
         vmin = self.parameterWidget.get_plot_params()['vmin']
         vmax = self.parameterWidget.get_plot_params()['vmax']
-        print("result['slog'].shape", result['slog'].shape)
-        min_val = 80 #np.nanmin(result['slog'][fmin_idx:fmax_idx, :][result['slog'][fmin_idx:fmax_idx, :] != -np.inf])
-        max_val = 120 # np.nanmax(result['slog'][fmin_idx:fmax_idx, :])
-        # self.num_spectra_label.setText(f"Min: {min_val:.2f}, Max: {max_val:.2f}")
-        # self.spectrogram_parameter_widget.set_plot_params(min_val,
-        #                                      max_val)
+
         self.plotter.display_spectrogram(
             self.spectrogram_result,
             starttime,

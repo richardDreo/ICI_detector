@@ -81,30 +81,8 @@ class ModuleIciDetector(QObject):
         result['cepstro'] = result['cepstro'][:, mask]
 
         self.update_p2vr_result()
-        # if self.cesptrogram_result["display_mode"]=="cepstrogram":
-        #     self.plotter.display_cepstrogram(
-        #         result,
-        #         self.starttime,
-        #         self.endtime,
-        #         self.cesptrogram_result["qmin"],
-        #         self.cesptrogram_result["qmax"],
-        #         self.cesptrogram_result["vmin"],
-        #         self.cesptrogram_result["vmax"],
-        #     )
-        # elif self.cesptrogram_result["display_mode"]=="detection_results":
-        #     self.plotter.display_detection_results(
-        #         result,
-        #         self.starttime,
-        #         self.endtime,
-        #         self.cesptrogram_result["qmin"],
-        #         self.cesptrogram_result["qmax"],
-        #         self.cesptrogram_result["vmin"],
-        #         self.cesptrogram_result["vmax"],
-        #         self.cesptrogram_result["metric"]
-        #     )
 
     def update_p2vr_result(self):
-        print("Updating P2VR result with new parameters...")
         new_params = self.parameterWidget.get_all_parameters()
         for key, value in new_params.items():
             if key in self.cesptrogram_result:
