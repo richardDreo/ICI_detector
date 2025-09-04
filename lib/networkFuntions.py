@@ -3,12 +3,12 @@ import os
 import pandas as pd
 import glob
 from datetime import timedelta
-from obspy import read, UTCDateTime, Stream, Trace
+from obspy import read, UTCDateTime, Stream
 from datetime import timedelta
-import gc
+# import gc
 import numpy as np
-from pydub import AudioSegment
-from mutagen.flac import FLAC
+# from pydub import AudioSegment
+# from mutagen.flac import FLAC
 from scipy.signal import butter, filtfilt
 
 def get_network_details(net_path: str, inventory_path: str) -> pd.DataFrame:
@@ -154,42 +154,42 @@ def get_stream_for_selected_period(df_files: pd.DataFrame, starttime: str, endti
     return stream
 
 
-def read_flac_file(flac_file):
-    """
-    Read a FLAC file and access its audio data and metadata, returning an ObsPy Stream.
+# def read_flac_file(flac_file):
+#     """
+#     Read a FLAC file and access its audio data and metadata, returning an ObsPy Stream.
 
-    Parameters:
-    - flac_file: Path to the FLAC file.
+#     Parameters:
+#     - flac_file: Path to the FLAC file.
 
-    Returns:
-    - stream: ObsPy Stream object containing the audio data as a Trace.
-    """
-    # Read audio data
-    audio = AudioSegment.from_file(flac_file, format="flac")
+#     Returns:
+#     - stream: ObsPy Stream object containing the audio data as a Trace.
+#     """
+#     # Read audio data
+#     audio = AudioSegment.from_file(flac_file, format="flac")
 
-    # Read metadata
-    flac = FLAC(flac_file)
-    metadata = {key: flac[key] for key in flac.keys()}
+#     # Read metadata
+#     flac = FLAC(flac_file)
+#     metadata = {key: flac[key] for key in flac.keys()}
 
-    # Convert audio segment to numpy array
-    samples = np.array(audio.get_array_of_samples())
+#     # Convert audio segment to numpy array
+#     samples = np.array(audio.get_array_of_samples())
 
-    # Create an ObsPy Trace
-    trace = Trace(data=samples)
-    trace.stats.starttime = UTCDateTime(metadata["starttime"][0])
-    trace.stats.sampling_rate = audio.frame_rate 
-    trace.stats.channel = "H"
-    trace.stats.station = metadata["sta"][0]
-    trace.stats.network = metadata["net"][0]
+#     # Create an ObsPy Trace
+#     trace = Trace(data=samples)
+#     trace.stats.starttime = UTCDateTime(metadata["starttime"][0])
+#     trace.stats.sampling_rate = audio.frame_rate 
+#     trace.stats.channel = "H"
+#     trace.stats.station = metadata["sta"][0]
+#     trace.stats.network = metadata["net"][0]
 
-    # Create an ObsPy Stream and add the trace
-    stream = Stream(traces=[trace])
+#     # Create an ObsPy Stream and add the trace
+#     stream = Stream(traces=[trace])
 
-    # Clean up to free memory
-    del audio
-    gc.collect()
+#     # Clean up to free memory
+#     del audio
+#     gc.collect()
 
-    return stream
+#     return stream
 
 
 def get_stream_for_selected_file(filename: str, channel: str = None, day: str = None) -> Stream:
