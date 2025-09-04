@@ -73,6 +73,7 @@ class MainWindow(QWidget):
     
 
     def update_stations(self):
+        print("update_stations called")
         selected_network = self.network_combo.currentText()
         stations = self.dfmseeds[self.dfmseeds['net'] == selected_network] #['sta'].unique().tolist()
 
@@ -80,6 +81,7 @@ class MainWindow(QWidget):
 
         self.station_combo.clear()
         self.station_combo.addItems(stations)
+        self.station_combo.setCurrentText(stations[0])  # Set the first item as the current text
 
         # try:
         distances = []
@@ -367,6 +369,9 @@ class MainWindow(QWidget):
 
         # Charger les données au démarrage
         self.dfstations, self.dfmseeds = self.network_manager.load_metadata()
+        print("Stations and files loaded.")
+        print(self.dfstations.head())
+        print(self.dfmseeds.head())
 
         self.setWindowTitle("GUI Spectrogram")
 
@@ -387,7 +392,9 @@ class MainWindow(QWidget):
         network_layout = QHBoxLayout()
         network_layout.addWidget(QLabel("Network:"))
         self.network_combo = QComboBox()
-        self.network_combo.addItems(sorted(self.dfmseeds['net'].unique().tolist()))
+        netlist = sorted(self.dfmseeds['net'].unique().tolist())
+        self.network_combo.addItems(netlist)
+        self.network_combo.setCurrentText(netlist[0])  # Set the first item as the current text
         network_layout.addWidget(self.network_combo)
         sample_selection_layout.addLayout(network_layout)
 
@@ -410,6 +417,7 @@ class MainWindow(QWidget):
         sample_selection_layout.addLayout(channel_layout)
 
         def update_channels():
+            print("Updating channels called")
             selected_station = self.station_combo.currentText()
             channels = self.dfmseeds[(self.dfmseeds['sta'] == selected_station) & (self.dfmseeds['net'] == self.network_combo.currentText())]['cha'].unique().tolist()
             channels = [channel.split('.')[0] for channel in channels]
@@ -612,6 +620,7 @@ class MainWindow(QWidget):
         self.networkMapPlotter = MapPlotter(self.map_plot_area)
         # self.station_combo.currentIndexChanged.connect(self.update_distance_table)
         self.update_stations()  
+
         self.update_distance_table()
         # Set size policy for left panel to be as small as possible
         left_panel_widget = QWidget()

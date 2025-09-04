@@ -22,11 +22,6 @@ class NetworkManager:
         
         return self.dfstations, self.dfmseeds
 
-    # def get_stations_by_network(self, network: str):
-    #     print(f"Getting stations for network: {network}")
-    #     stations = self.dfmseeds[self.dfmseeds['net'] == network]['sta'].unique().tolist()
-    #     print(f"Stations for {network}: {stations}")
-    #     return stations
 
     def get_channels_by_station(self, network: str, station: str):
         channels = self.dfmseeds[
