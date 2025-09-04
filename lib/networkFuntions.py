@@ -76,6 +76,10 @@ def get_network_details(net_path: str, inventory_path: str) -> pd.DataFrame:
     return df_stations.drop_duplicates()
 
 
+import os
+import glob
+import pandas as pd
+
 def get_network_file_list(net: str, sta: str, sds_path: str) -> pd.DataFrame:
     """
     Create the list of mseed files available for the network and station.
@@ -94,20 +98,26 @@ def get_network_file_list(net: str, sta: str, sds_path: str) -> pd.DataFrame:
     pd.DataFrame
         A pandas DataFrame with all the corresponding files and some details.
     """
+    # Use os.path.join to create a platform-independent file pattern
     file_pattern = os.path.join(sds_path, '*', net, sta, '*', '*.*')
     file_list = sorted(glob.glob(file_pattern))
     df_files = pd.DataFrame(file_list, columns=['filename'])
 
-    df_files['year'] = df_files['filename'].str.split('/').str[-5]
-    df_files['net'] = df_files['filename'].str.split('/').str[-4]
-    df_files['sta'] = df_files['filename'].str.split('/').str[-3]
-    df_files['cha'] = df_files['filename'].str.split('/').str[-2]
-    df_files['julian'] = df_files['filename'].str.split('/').str[-1].str.split('.').str[6]
+    # Normalize file paths to use the correct separator for the platform
+    df_files['filename'] = df_files['filename'].apply(os.path.normpath)
 
-    df_files['starttime'] = df_files['filename'].str.split('/').str[-1].str.split('.').str[7].where(
-        df_files['filename'].str.split('/').str[-1].str.split('.').str.len() > 8, '00')
+    # Split the file path into components using os.sep
+    df_files['year'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-5])
+    df_files['net'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-4])
+    df_files['sta'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-3])
+    df_files['cha'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-2])
+    df_files['julian'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-1].split('.')[6])
 
-    df_files['starttime'] = pd.to_datetime(df_files['year'] + df_files['julian']+df_files['starttime'], format='%Y%j%H')
+    df_files['starttime'] = df_files['filename'].apply(
+        lambda x: x.split(os.sep)[-1].split('.')[7] if len(x.split(os.sep)[-1].split('.')) > 8 else '00'
+    )
+
+    df_files['starttime'] = pd.to_datetime(df_files['year'] + df_files['julian'] + df_files['starttime'], format='%Y%j%H')
     df_files['datetime'] = pd.to_datetime(df_files['year'] + df_files['julian'], format='%Y%j')
 
     return df_files
