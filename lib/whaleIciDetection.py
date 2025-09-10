@@ -90,6 +90,7 @@ def get_preset_parameters(species=None):
         #['fw', 2 ** 9, 0.75, 5, 18, 22, [10, 12], [8, 14],'fw'],
         ['fw_10', 2**9, 0.75, 5,18,22,[9.7,11.5],[8.,13.],'fw_10'],
         ['fw_15', 2**9, 0.75, 5,18,22,[14.5,17],[12.,19.5],'fw_15'],
+        ['atl_bw', 2 ** 10, 0.95, 5, 16, 18, [10, 12], [8, 14], 'atl_bw'], #2004 XI => pas l ame chose sur 5L en 2018
         ['ind', 2 ** 10, 0.95, 5, 16, 18, [10, 12], [8, 14], 'ind'], #2004 XI => pas l ame chose sur 5L en 2018
     ]
     params = pd.DataFrame(params,

@@ -1,13 +1,53 @@
 import pandas as pd
 from lib.networkFuntions import get_network_details, get_network_file_list
-
+import json, os, glob
+from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 class NetworkManager:
-    def __init__(self, inventory_path: str, data_path: str):
-        self.inventory_path = inventory_path
-        self.data_path = data_path
+
+    def __init__(self, config_path: str):
+        self.config_path=config_path
+        with open(config_path, 'r') as file:
+            self.config = json.load(file) 
+
+        self.inventory_path = self.config["INV_folder"]
+        self.data_path = self.config["SDS_folder"]
         self.dfstations = pd.DataFrame()
         self.dfmseeds = pd.DataFrame()
+
+
+
+        # Check if the folders exist
+        self._check_folder_exists(self.inventory_path, "INVENTORY folder")
+        self._check_folder_exists(self.data_path, "SDS folder")
+
+
+    
+    def load_metadata(self, network: str = '*', station: str = '*'):
+        """
+        Load stations and available files for a given network.
+
+        Parameters
+        ----------
+        network : str
+            The network code ("*" for all networks).
+        station : str
+            The station name ("*" for all stations").
+
+        Returns
+        -------
+        tuple
+            A tuple containing two DataFrames: dfstations and dfmseeds.
+        """
+        # Load station metadata
+        self.dfstations = get_network_details(network, self.inventory_path)
+        self.dfstations = self.dfstations[self.dfstations['ele'] < 0]  # Submarine stations only
+
+        # Load file metadata
+        self.dfmseeds = get_network_file_list(network, station, self.data_path)
+        self.dfmseeds['cha'] = self.dfmseeds['cha'].str.split('.').str[0]
+
+        return self.dfstations, self.dfmseeds
 
 
     def load_metadata(self, network: str = '*', station: str = '*'):
@@ -84,4 +124,185 @@ class NetworkManager:
 
         return [lonmin, lonmax, latmin, latmax]
     
+
+    # def _check_folder_exists(self, folder_path: str, folder_name: str):
+    #     """
+    #     Check if a folder exists, validate its contents, and prompt the user to select a new folder if it is invalid.
+
+    #     Parameters
+    #     ----------
+    #     folder_path : str
+    #         The path to the folder to check.
+    #     folder_name : str
+    #         A descriptive name for the folder (used in dialog messages).
+    #     """
+    #     def is_valid_sds_folder(folder_path):
+    #         """Check if the folder follows the SDS structure."""
+    #         # Look for subdirectories matching the SDS structure (e.g., YEAR/NET/STA/CHA)
+    #         return any(
+    #             os.path.isdir(os.path.join(folder_path, year))
+    #             for year in os.listdir(folder_path)
+    #             if year.isdigit()  # Check if the subdirectory is a year (e.g., "2023")
+    #         )
+
+    #     def is_valid_inventory_folder(folder_path):
+    #         """Check if the folder contains XML files."""
+    #         return bool(glob.glob(os.path.join(folder_path, "*.xml")))
+
+    #     while True:
+    #         # Check if the folder exists
+    #         if not os.path.exists(folder_path):
+    #             # Show a message box to inform the user
+    #             QMessageBox.warning(
+    #                 None,
+    #                 f"{folder_name} Missing",
+    #                 f"The {folder_name} does not exist: {folder_path}\nPlease select a new folder."
+    #             )
+
+    #             # Open a folder selection dialog
+    #             folder_path = QFileDialog.getExistingDirectory(
+    #                 None,
+    #                 f"Select {folder_name}",
+    #                 folder_path  # Default to the original folder path
+    #             )
+
+    #             if not folder_path:
+    #                 raise FileNotFoundError(f"{folder_name} selection was canceled.")
+
+    #         # Validate the folder contents
+    #         if folder_name == "SDS folder" and not is_valid_sds_folder(folder_path):
+    #             QMessageBox.warning(
+    #                 None,
+    #                 f"Invalid {folder_name}",
+    #                 f"The selected folder is not a valid {folder_name}. Please select a valid SDS folder."
+    #             )
+    #             folder_path = QFileDialog.getExistingDirectory(
+    #                 None,
+    #                 f"Select {folder_name}",
+    #                 folder_path
+    #             )
+    #             if not folder_path:
+    #                 raise ValueError(f"{folder_name} selection was canceled or invalid.")
+    #             continue  # Revalidate the new folder
+
+    #         if folder_name == "INVENTORY folder" and not is_valid_inventory_folder(folder_path):
+    #             QMessageBox.warning(
+    #                 None,
+    #                 f"Invalid {folder_name}",
+    #                 f"The selected folder does not contain XML files. Please select a valid Inventory folder."
+    #             )
+    #             folder_path = QFileDialog.getExistingDirectory(
+    #                 None,
+    #                 f"Select {folder_name}",
+    #                 folder_path
+    #             )
+    #             if not folder_path:
+    #                 raise ValueError(f"{folder_name} selection was canceled or invalid.")
+    #             continue  # Revalidate the new folder
+
+    #         # Check read permissions
+    #         if not os.access(folder_path, os.R_OK):
+    #             raise PermissionError(f"No read permission for {folder_name}: {folder_path}")
+
+    #         # If all checks pass, break the loop
+    #         break
+
+    #     # Update the corresponding attribute in the class
+    #     if folder_name == "INVENTORY folder":
+    #         self.inventory_path = folder_path
+    #     elif folder_name == "SDS folder":
+    #         self.data_path = folder_path
+
+    #     # Save the updated configuration to the JSON file
+    #     with open(self.config_path, 'w') as file:
+    #         json.dump(self.config, file, indent=4)
+            
+    
   
+    def _check_folder_exists(self, folder_path: str, folder_name: str):
+        """
+        Check if a folder exists, validate its contents, and prompt the user to select a new folder if it is invalid.
+
+        Parameters
+        ----------
+        folder_path : str
+            The path to the folder to check.
+        folder_name : str
+            A descriptive name for the folder (used in dialog messages).
+        """
+        def is_valid_sds_folder(folder_path):
+            """Check if the folder follows the SDS structure."""
+            return any(
+                os.path.isdir(os.path.join(folder_path, year))
+                for year in os.listdir(folder_path)
+                if year.isdigit()  # Check if the subdirectory is a year (e.g., "2023")
+            )
+
+        def is_valid_inventory_folder(folder_path):
+            """Check if the folder contains XML files."""
+            return bool(glob.glob(os.path.join(folder_path, "*.xml")))
+
+        def validate_folder(folder_path, folder_name):
+            """Validate the folder based on its type."""
+            if folder_name == "SDS folder" and not is_valid_sds_folder(folder_path):
+                raise ValueError(f"The selected folder is not a valid SDS folder.")
+            if folder_name == "INVENTORY folder" and not is_valid_inventory_folder(folder_path):
+                raise ValueError(f"The selected folder does not contain XML files.")
+
+        while True:
+            # Check if the folder exists
+            if not os.path.exists(folder_path):
+                # Show a message box to inform the user
+                QMessageBox.warning(
+                    None,
+                    f"{folder_name} Missing",
+                    f"The {folder_name} does not exist: {folder_path}\nPlease select a new folder."
+                )
+                folder_path = QFileDialog.getExistingDirectory(
+                    None,
+                    f"{folder_name} Missing",
+                    folder_path  # Default to the original folder path
+                )
+                if not folder_path:
+                    raise FileNotFoundError(f"{folder_name} selection was canceled.")
+
+            # Validate the folder contents
+            try:
+                validate_folder(folder_path, folder_name)
+            except ValueError as e:
+                QMessageBox.warning(
+                    None,
+                    f"Invalid {folder_name}",
+                    str(e) + f" Please select a valid {folder_name}."
+                )
+                folder_path = QFileDialog.getExistingDirectory(
+                    None,
+                    f"Select {folder_name}",
+                    folder_path
+                )
+                if not folder_path:
+                    raise ValueError(f"{folder_name} selection was canceled or invalid.")
+                continue  # Revalidate the new folder
+
+            # Check read permissions
+            if not os.access(folder_path, os.R_OK):
+                raise PermissionError(f"No read permission for {folder_name}: {folder_path}")
+
+            # If all checks pass, break the loop
+            break
+
+        # Update the corresponding attribute in the class
+        if folder_name == "INVENTORY folder":
+            self.inventory_path = folder_path
+            self.config["INV_folder"] = folder_path
+        elif folder_name == "SDS folder":
+            self.data_path = folder_path
+            self.config["SDS_folder"] = folder_path
+
+        # Save the updated configuration to the JSON file
+        self._save_config()
+
+    def _save_config(self):
+        """Save the updated configuration to the JSON file."""
+        with open(self.config_path, 'w') as file:
+            json.dump(self.config, file, indent=4)
