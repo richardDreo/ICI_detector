@@ -1,5 +1,6 @@
 from obspy.core import inventory
 import os
+import logging
 import pandas as pd
 import glob
 from datetime import timedelta
@@ -10,6 +11,9 @@ import numpy as np
 # from pydub import AudioSegment
 # from mutagen.flac import FLAC
 from scipy.signal import butter, filtfilt
+
+
+
 
 def get_network_details(net_path: str, inventory_path: str) -> pd.DataFrame:
     """
@@ -27,7 +31,9 @@ def get_network_details(net_path: str, inventory_path: str) -> pd.DataFrame:
     pd.DataFrame
         A pandas DataFrame with the station details.
     """
+    logging.info(f'Loading inventory for network: {net_path} from {inventory_path}')
     inv = inventory.read_inventory(os.path.join(inventory_path, f'{net_path}*.xml'))
+    logging.info(inv)
 
     df_stations = []
     for net in inv:
@@ -99,12 +105,18 @@ def get_network_file_list(net: str, sta: str, sds_path: str) -> pd.DataFrame:
         A pandas DataFrame with all the corresponding files and some details.
     """
     # Use os.path.join to create a platform-independent file pattern
+
+    logging.info(f'Loading file list for network: {net}, station: {sta} from {sds_path}')
     file_pattern = os.path.join(sds_path, '*', net, sta, '*', '*.*')
+    logging.info(f'Looking for files with pattern: {file_pattern}')
     file_list = sorted(glob.glob(file_pattern))
     df_files = pd.DataFrame(file_list, columns=['filename'])
+    logging.info(f'Found {len(df_files)} files.')
 
     # Normalize file paths to use the correct separator for the platform
     df_files['filename'] = df_files['filename'].apply(os.path.normpath)
+    logging.info(df_files.head())
+    logging.info(df_files.iloc[0].filename)
 
     # Split the file path into components using os.sep
     df_files['year'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-5])

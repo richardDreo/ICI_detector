@@ -4,7 +4,7 @@ import pandas as pd
 import warnings
 
 import os
-import json
+import logging
 
 from datetime import datetime
 from geographiclib.geodesic import Geodesic
@@ -33,6 +33,28 @@ from utils.report_generator import ReportGenerator
 # === Désactiver les warnings ===
 warnings.filterwarnings("ignore")
 
+# Configure the logger
+log_file = "logs/app.log"
+log_dir = os.path.dirname(log_file)
+
+# Ensure the directory for the log file exists
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+logging.basicConfig(
+    level=logging.DEBUG,  # Set the default logging level
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(log_file),  # Write logs to a file
+        # logging.StreamHandler()         # Optionally, print logs to the console
+    ]
+)
+# Suppress debug messages from other libraries
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
+logging.getLogger("scipy").setLevel(logging.WARNING)
+logging.getLogger("numpy").setLevel(logging.WARNING)
+
+
 # === MainWindow ===
 class MainWindow(QWidget):
     sig_set_dates = Signal(datetime, datetime)
@@ -42,7 +64,7 @@ class MainWindow(QWidget):
         file_path, _ = QFileDialog.getSaveFileName(self, "Save Figure", "", "PNG Files (*.png);;All Files (*)", options=options)
         if file_path:
             self.fig_spectro.savefig(file_path)
-            print(f"Figure saved to {file_path}")
+            logging.info(f"Figure saved to {file_path}")
         
 
     def filter_stations_by_date(self, stations):
@@ -59,7 +81,7 @@ class MainWindow(QWidget):
                 start_time = datetime.strptime(start_time, "%Y/%m/%d %H:%M")
                 end_time = datetime.strptime(end_time, "%Y/%m/%d %H:%M")
             except ValueError:
-                print("Invalid date format. Please use 'YYYY/MM/DD HH:MM'.")
+                logging.error("Invalid date format. Please use 'YYYY/MM/DD HH:MM'.")
                 return
 
             # Filter the stations based on the defined period
@@ -73,7 +95,7 @@ class MainWindow(QWidget):
     
 
     def update_stations(self):
-        print("update_stations called")
+        logging.info("update_stations called")
         selected_network = self.network_combo.currentText()
         stations = self.dfmseeds[self.dfmseeds['net'] == selected_network] #['sta'].unique().tolist()
 
@@ -161,7 +183,7 @@ class MainWindow(QWidget):
             self.module_detector.compute_ici_detection(dict_params)
 
         except Exception as e:
-            print(f"Error in processing: {e}")
+            logging.error(f"Error in processing: {e}")
 
     def run_spectrogram_process(self):
         try:
@@ -178,7 +200,7 @@ class MainWindow(QWidget):
             self.module_spectrogram.compute_spectrogram(dict_params)
 
         except Exception as e:
-            print(f"Error in processing: {e}")
+            logging.error(f"Error in run_spectrogram_process: {e}")
 
 
 
@@ -253,7 +275,7 @@ class MainWindow(QWidget):
             self.sig_set_dates.emit(starttime, endtime)
             
         except Exception as e:
-            print("Error in sig_set_dates:", e)
+            logging.error("Error in update_dates:", e)
 
     @Slot(dict, dict)
     def handle_processed_data_ready(self, processed_data, processed_spectrograms):
@@ -334,12 +356,13 @@ class MainWindow(QWidget):
                     self.bddTable.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
 
         except Exception as e:
-            print(f"Error loading CSV file: {e}")
+            logging.error(f"Error loading CSV file: {e}")
 
     def __init__(self):
         super().__init__()
 
         # create_modules()
+        logging.info("Initializing ModuleSpectrogram")
         self.module_spectrogram = ModuleSpectrogram()
         self.sig_set_dates.connect(self.module_spectrogram.set_dates)
         self.module_spectrogram.parameterWidget.sig_number_of_spectra.connect(self.slot_number_of_spectra)
@@ -350,6 +373,7 @@ class MainWindow(QWidget):
         self.spectrogram_parameter_widget.sig_computeSpectrogramRequested.connect(self.run_spectrogram_process)
         self.spectrogram_parameter_widget.refreshPlotRequested.connect(self.module_spectrogram.plot_spectrogram)
 
+        logging.info("Initializing ModuleIciDetector")
         self.module_detector = ModuleIciDetector()
         self.sig_set_dates.connect(self.module_detector.set_dates)
         self.module_detector.worker.progress.connect(self.update_progress_detector)
@@ -363,14 +387,15 @@ class MainWindow(QWidget):
         # Load config
         config_path = os.path.join(os.path.dirname(__file__), "./config/config.json")     
 
-        # Créer l’instance du gestionnaire réseau        
+        # Créer l’instance du gestionnaire réseau     
+        logging.info("Initializing NetworkManager")   
         self.network_manager = NetworkManager(config_path)
 
         # Charger les données au démarrage
         self.dfstations, self.dfmseeds = self.network_manager.load_metadata()
-        print("Stations and files loaded.")
-        print(self.dfstations.head())
-        print(self.dfmseeds.head())
+        logging.info("Stations and files loaded.")
+        logging.info(self.dfstations.head())
+        logging.info(self.dfmseeds.head())
 
         self.setWindowTitle("GUI Spectrogram")
 
@@ -416,7 +441,7 @@ class MainWindow(QWidget):
         sample_selection_layout.addLayout(channel_layout)
 
         def update_channels():
-            print("Updating channels called")
+            logging.info("Updating channels called")
             selected_station = self.station_combo.currentText()
             channels = self.dfmseeds[(self.dfmseeds['sta'] == selected_station) & (self.dfmseeds['net'] == self.network_combo.currentText())]['cha'].unique().tolist()
             channels = [channel.split('.')[0] for channel in channels]
@@ -635,7 +660,7 @@ class MainWindow(QWidget):
         try:
             self.update_stations()
         except Exception as e:
-            print(f"Error in updating stations: {e}")
+            logging.error(f"Error in updating stations: {e}")
 
         self.report_generator = ReportGenerator(self.global_figures_area)
 
@@ -644,8 +669,8 @@ class MainWindow(QWidget):
         update_time_fields()
         self.setLayout(main_layout)
 
-        print(self.module_detector.parameterWidget.objectName())  # Should print "ParametersWidgetDetector"
-        print(self.module_spectrogram.parameterWidget.objectName())  # Should print "ParametersWidgetSpectrogram"
+        logging.info(self.module_detector.parameterWidget.objectName())  # Should print "ParametersWidgetDetector"
+        logging.info(self.module_spectrogram.parameterWidget.objectName())  # Should print "ParametersWidgetSpectrogram"
         self.toggle_shortcut = QShortcut(QKeySequence("Ctrl+B"), self)
         self.toggle_shortcut.activated.connect(self.toggle_controls_visibility)
 

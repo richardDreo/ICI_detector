@@ -15,8 +15,6 @@ class NetworkManager:
         self.dfstations = pd.DataFrame()
         self.dfmseeds = pd.DataFrame()
 
-
-
         # Check if the folders exist
         self._check_folder_exists(self.inventory_path, "INVENTORY folder")
         self._check_folder_exists(self.data_path, "SDS folder")
@@ -122,101 +120,7 @@ class NetworkManager:
             lonmin = center - lat_extent
             lonmax = center + lat_extent
 
-        return [lonmin, lonmax, latmin, latmax]
-    
-
-    # def _check_folder_exists(self, folder_path: str, folder_name: str):
-    #     """
-    #     Check if a folder exists, validate its contents, and prompt the user to select a new folder if it is invalid.
-
-    #     Parameters
-    #     ----------
-    #     folder_path : str
-    #         The path to the folder to check.
-    #     folder_name : str
-    #         A descriptive name for the folder (used in dialog messages).
-    #     """
-    #     def is_valid_sds_folder(folder_path):
-    #         """Check if the folder follows the SDS structure."""
-    #         # Look for subdirectories matching the SDS structure (e.g., YEAR/NET/STA/CHA)
-    #         return any(
-    #             os.path.isdir(os.path.join(folder_path, year))
-    #             for year in os.listdir(folder_path)
-    #             if year.isdigit()  # Check if the subdirectory is a year (e.g., "2023")
-    #         )
-
-    #     def is_valid_inventory_folder(folder_path):
-    #         """Check if the folder contains XML files."""
-    #         return bool(glob.glob(os.path.join(folder_path, "*.xml")))
-
-    #     while True:
-    #         # Check if the folder exists
-    #         if not os.path.exists(folder_path):
-    #             # Show a message box to inform the user
-    #             QMessageBox.warning(
-    #                 None,
-    #                 f"{folder_name} Missing",
-    #                 f"The {folder_name} does not exist: {folder_path}\nPlease select a new folder."
-    #             )
-
-    #             # Open a folder selection dialog
-    #             folder_path = QFileDialog.getExistingDirectory(
-    #                 None,
-    #                 f"Select {folder_name}",
-    #                 folder_path  # Default to the original folder path
-    #             )
-
-    #             if not folder_path:
-    #                 raise FileNotFoundError(f"{folder_name} selection was canceled.")
-
-    #         # Validate the folder contents
-    #         if folder_name == "SDS folder" and not is_valid_sds_folder(folder_path):
-    #             QMessageBox.warning(
-    #                 None,
-    #                 f"Invalid {folder_name}",
-    #                 f"The selected folder is not a valid {folder_name}. Please select a valid SDS folder."
-    #             )
-    #             folder_path = QFileDialog.getExistingDirectory(
-    #                 None,
-    #                 f"Select {folder_name}",
-    #                 folder_path
-    #             )
-    #             if not folder_path:
-    #                 raise ValueError(f"{folder_name} selection was canceled or invalid.")
-    #             continue  # Revalidate the new folder
-
-    #         if folder_name == "INVENTORY folder" and not is_valid_inventory_folder(folder_path):
-    #             QMessageBox.warning(
-    #                 None,
-    #                 f"Invalid {folder_name}",
-    #                 f"The selected folder does not contain XML files. Please select a valid Inventory folder."
-    #             )
-    #             folder_path = QFileDialog.getExistingDirectory(
-    #                 None,
-    #                 f"Select {folder_name}",
-    #                 folder_path
-    #             )
-    #             if not folder_path:
-    #                 raise ValueError(f"{folder_name} selection was canceled or invalid.")
-    #             continue  # Revalidate the new folder
-
-    #         # Check read permissions
-    #         if not os.access(folder_path, os.R_OK):
-    #             raise PermissionError(f"No read permission for {folder_name}: {folder_path}")
-
-    #         # If all checks pass, break the loop
-    #         break
-
-    #     # Update the corresponding attribute in the class
-    #     if folder_name == "INVENTORY folder":
-    #         self.inventory_path = folder_path
-    #     elif folder_name == "SDS folder":
-    #         self.data_path = folder_path
-
-    #     # Save the updated configuration to the JSON file
-    #     with open(self.config_path, 'w') as file:
-    #         json.dump(self.config, file, indent=4)
-            
+        return [lonmin, lonmax, latmin, latmax]            
     
   
     def _check_folder_exists(self, folder_path: str, folder_name: str):
