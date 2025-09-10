@@ -85,6 +85,7 @@ def get_network_details(net_path: str, inventory_path: str) -> pd.DataFrame:
 import os
 import glob
 import pandas as pd
+import logging
 
 def get_network_file_list(net: str, sta: str, sds_path: str) -> pd.DataFrame:
     """
@@ -105,20 +106,38 @@ def get_network_file_list(net: str, sta: str, sds_path: str) -> pd.DataFrame:
         A pandas DataFrame with all the corresponding files and some details.
     """
     # Use os.path.join to create a platform-independent file pattern
-
     logging.info(f'Loading file list for network: {net}, station: {sta} from {sds_path}')
     file_pattern = os.path.join(sds_path, '*', net, sta, '*', '*.*')
     logging.info(f'Looking for files with pattern: {file_pattern}')
     file_list = sorted(glob.glob(file_pattern))
-    df_files = pd.DataFrame(file_list, columns=['filename'])
-    logging.info(f'Found {len(df_files)} files.')
+    logging.info(f'Found {len(file_list)} files.')
+
+    # Separate valid and invalid files
+    valid_files = []
+    invalid_files = []
+
+    for file in file_list:
+        # Check if the file path has the expected structure
+        path_parts = file.split(os.sep)
+        if len(path_parts) >= 6 and len(path_parts[-1].split('.')) >= 7:
+            valid_files.append(file)
+        else:
+            invalid_files.append(file)
+
+    # Log invalid files
+    if invalid_files:
+        logging.warning(f'{len(invalid_files)} invalid files found:')
+        for invalid_file in invalid_files:
+            logging.warning(f'Invalid file: {invalid_file}')
+
+    # Process valid files
+    df_files = pd.DataFrame(valid_files, columns=['filename'])
+    logging.info(f'Processing {len(df_files)} valid files.')
 
     # Normalize file paths to use the correct separator for the platform
     df_files['filename'] = df_files['filename'].apply(os.path.normpath)
-    logging.info(df_files.head())
-    logging.info(df_files.iloc[0].filename)
 
-    # Split the file path into components using os.sep
+    # Extract components from the filename
     df_files['year'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-5])
     df_files['net'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-4])
     df_files['sta'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-3])
@@ -126,13 +145,65 @@ def get_network_file_list(net: str, sta: str, sds_path: str) -> pd.DataFrame:
     df_files['julian'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-1].split('.')[6])
 
     df_files['starttime'] = df_files['filename'].apply(
-        lambda x: x.split(os.sep)[-1].split('.')[7] if len(x.split(os.sep)[-1].split('.')) > 8 else '00'
+        lambda x: x.split(os.sep)[-1].split('.')[7] if len(x.split(os.sep)[-1].split('.')) > 7 else '00'
     )
 
-    df_files['starttime'] = pd.to_datetime(df_files['year'] + df_files['julian'] + df_files['starttime'], format='%Y%j%H')
-    df_files['datetime'] = pd.to_datetime(df_files['year'] + df_files['julian'], format='%Y%j')
+    # Convert to datetime
+    df_files['starttime'] = pd.to_datetime(
+        df_files['year'] + df_files['julian'] + df_files['starttime'], format='%Y%j%H', errors='coerce'
+    )
+    df_files['datetime'] = pd.to_datetime(
+        df_files['year'] + df_files['julian'], format='%Y%j', errors='coerce'
+    )
 
     return df_files
+# def get_network_file_list(net: str, sta: str, sds_path: str) -> pd.DataFrame:
+#     """
+#     Create the list of mseed files available for the network and station.
+
+#     Parameters
+#     ----------
+#     net : str
+#         The network code ("*" for all networks").
+#     sta : str
+#         The station name ("*" for all stations").
+#     sds_path : str
+#         Path to the SDS files.
+
+#     Returns
+#     -------
+#     pd.DataFrame
+#         A pandas DataFrame with all the corresponding files and some details.
+#     """
+#     # Use os.path.join to create a platform-independent file pattern
+
+#     logging.info(f'Loading file list for network: {net}, station: {sta} from {sds_path}')
+#     file_pattern = os.path.join(sds_path, '*', net, sta, '*', '*.*')
+#     logging.info(f'Looking for files with pattern: {file_pattern}')
+#     file_list = sorted(glob.glob(file_pattern))
+#     df_files = pd.DataFrame(file_list, columns=['filename'])
+#     logging.info(f'Found {len(df_files)} files.')
+
+#     # Normalize file paths to use the correct separator for the platform
+#     df_files['filename'] = df_files['filename'].apply(os.path.normpath)
+#     logging.info(df_files.head())
+#     logging.info(df_files.iloc[0].filename)
+
+#     # Split the file path into components using os.sep
+#     df_files['year'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-5])
+#     df_files['net'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-4])
+#     df_files['sta'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-3])
+#     df_files['cha'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-2])
+#     df_files['julian'] = df_files['filename'].apply(lambda x: x.split(os.sep)[-1].split('.')[6])
+
+#     df_files['starttime'] = df_files['filename'].apply(
+#         lambda x: x.split(os.sep)[-1].split('.')[7] if len(x.split(os.sep)[-1].split('.')) > 8 else '00'
+#     )
+
+#     df_files['starttime'] = pd.to_datetime(df_files['year'] + df_files['julian'] + df_files['starttime'], format='%Y%j%H')
+#     df_files['datetime'] = pd.to_datetime(df_files['year'] + df_files['julian'], format='%Y%j')
+
+#     return df_files
 
 
 def get_stream_for_selected_period(df_files: pd.DataFrame, starttime: str, endtime: str, channel: str = None) -> Stream:
