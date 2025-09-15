@@ -8,7 +8,7 @@ from datetime import timedelta
 from obspy import UTCDateTime
 from lib.signalProcessing import get_spectrogram
 from lib.networkFuntions import get_stream_for_selected_file, get_calibrated_stream
-
+import logging
 
 class WorkerSpectrogram(QThread):
     progress = Signal(int)
@@ -79,5 +79,6 @@ class WorkerSpectrogram(QThread):
             self.progress.emit(self.counter)
             return t, f, 120 + 10 * np.log10(np.abs(s))
         except Exception as e:
-            print(f"Error in process_file: {e}")
+
+            logging.error(f"Spectro - Error processing file {row.filename}: {e}")
             return None

@@ -12,6 +12,11 @@ import numpy as np
 # from mutagen.flac import FLAC
 from scipy.signal import butter, filtfilt
 
+import os
+import glob
+import pandas as pd
+import logging
+
 
 
 
@@ -33,7 +38,6 @@ def get_network_details(net_path: str, inventory_path: str) -> pd.DataFrame:
     """
     logging.info(f'Loading inventory for network: {net_path} from {inventory_path}')
     inv = inventory.read_inventory(os.path.join(inventory_path, f'{net_path}*.xml'))
-    logging.info(inv)
 
     df_stations = []
     for net in inv:
@@ -62,7 +66,7 @@ def get_network_details(net_path: str, inventory_path: str) -> pd.DataFrame:
                             sta_end
                         ])
                 except Exception as e:
-                    print(f'Error in function "get_network_details": {net.code} {e}')
+                    logging.error(f'Error in function "get_network_details": {net.code} {e}')
                     df_stations.append([
                         net.code,
                         station.code,
@@ -81,11 +85,6 @@ def get_network_details(net_path: str, inventory_path: str) -> pd.DataFrame:
     ])
     return df_stations.drop_duplicates()
 
-
-import os
-import glob
-import pandas as pd
-import logging
 
 def get_network_file_list(net: str, sta: str, sds_path: str) -> pd.DataFrame:
     """
@@ -241,7 +240,7 @@ def get_stream_for_selected_period(df_files: pd.DataFrame, starttime: str, endti
     try:
         stream = stream.merge(method=1)
     except Exception as e:
-        print(f"Error merging stream: {e}")
+        logging.error(f"Error merging stream: {e}")
 
     stream.trim(UTCDateTime(starttime), UTCDateTime(endtime))
     return stream
@@ -329,7 +328,7 @@ def get_stream_for_selected_file(filename: str, channel: str = None, day: str = 
         # stream = stream.merge()
         # stream.merge(method=1, fill_value=0)
     except Exception as e:
-        raise RuntimeError(f"Impossible to merge stream: {e}")
+        logging.error(f"Impossible to merge stream: {e}")
 
     return stream
 
@@ -359,15 +358,15 @@ def get_calibrated_stream(stream: Stream, df_stations: pd.DataFrame) -> Stream:
             sensitivity = float(df_stations.loc[(station, channel)].sensitivity)
             trace.data = trace.data / sensitivity
         except KeyError:
-            print(f"Sensitivity not found for station {station} and channel {channel}.")
+            logging.error(f"Sensitivity not found for station {station} and channel {channel}.")
             if 'MAHY' in station:
-                print("Applying MAHY calibration.")
+                logging.info("Applying MAHY calibration.")
                 # sensitivity=-163.5
                 # TO_VOLT = (5/(2**24))
 
                 # trace.data = (trace.data * TO_VOLT) / (10 ** (sensitivity / 20))
                 trace.data = trace.data / (4.5*(10**7))
         except Exception as e:
-            print(f"Error calibrating trace for station {station} and channel {channel}: {e}")
+            logging.error(f"Error calibrating trace for station {station} and channel {channel}: {e}")
 
     return stream

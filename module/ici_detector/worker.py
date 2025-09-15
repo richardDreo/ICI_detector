@@ -8,6 +8,7 @@ from obspy import UTCDateTime
 from lib.signalProcessing import get_spectrogram, get_cepstro
 from lib.networkFuntions import get_stream_for_selected_file
 from lib.whaleIciDetection import get_mean_cepstrum, get_peak_to_valley_ratio
+import logging
 
 class WorkerIciDetector(QThread):
     progress = Signal(int)
@@ -74,26 +75,32 @@ class WorkerIciDetector(QThread):
 
 
     def process_file(self, row):
-        st = get_stream_for_selected_file(row.filename)
-        st.trim(UTCDateTime(row.datetime), UTCDateTime(row.datetime + timedelta(hours=24)))
-        t, q, c = self.process_species(st, self.dict_params)
+        try:
+            st = get_stream_for_selected_file(row.filename)
+            st.trim(UTCDateTime(row.datetime), UTCDateTime(row.datetime + timedelta(hours=24)))
+            t, q, c = self.process_species(st, self.dict_params)
 
-        delta = timedelta(seconds=pd.to_timedelta(self.metric).total_seconds())
-        current_day = row.starttime.floor('D')
+            delta = timedelta(seconds=pd.to_timedelta(self.metric).total_seconds())
+            current_day = row.starttime.floor('D')
 
-        t_hourly, c_hourly = [], []
-        for hour in pd.date_range(start=current_day, periods=int((24*3600)/delta.total_seconds()), freq=self.metric):
-            mask = (t >= hour) & (t < hour + delta)
-            if np.any(mask):
-                c_hour = get_mean_cepstrum(c[:, mask], q)
-                t_hourly.append(hour)
-                c_hourly.append(c_hour)
+            t_hourly, c_hourly = [], []
+            for hour in pd.date_range(start=current_day, periods=int((24*3600)/delta.total_seconds()), freq=self.metric):
+                mask = (t >= hour) & (t < hour + delta)
+                if np.any(mask):
+                    c_hour = get_mean_cepstrum(c[:, mask], q)
+                    t_hourly.append(hour)
+                    c_hourly.append(c_hour)
 
-        if len(t_hourly) > 0:
-            self.counter += 1
-            self.progress.emit(self.counter)
-            return np.array(t_hourly), q, np.transpose(c_hourly)
-        return None
+            if len(t_hourly) > 0:
+                self.counter += 1
+                self.progress.emit(self.counter)
+                return np.array(t_hourly), q, np.transpose(c_hourly)
+            return None
+
+        except Exception as e:
+            # Log the error and return None
+            logging.error(f"ICI detection - Error processing file {row.filename}: {e}")
+            return None
 
     def process_species(self, st, preset_parameters):
         try:

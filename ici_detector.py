@@ -211,20 +211,20 @@ class MainWindow(QWidget):
         self.num_spectra_label.setText(f"Processing... {value}/{len(self.module_detector.worker.files_to_process_df)}")
 
 
-    def handle_cepstro_selection(self, xmin_datetime, xmax_datetime, ymin, ymax):
-        """
-        Handle the rectangle selection event.
+    # def handle_cepstro_selection(self, xmin_datetime, xmax_datetime, ymin, ymax):
+    #     """
+    #     Handle the rectangle selection event.
 
-        Parameters:
-        - xmin_datetime: Start time of the selection (datetime string).
-        - xmax_datetime: End time of the selection (datetime string).
-        - ymin: Minimum y-axis value of the selection.
-        - ymax: Maximum y-axis value of the selection.
-        """
-        print(f"Selection made:")
-        print(f"x-axis range: ({xmin_datetime}, {xmax_datetime})")
-        print(f"y-axis range: ({ymin}, {ymax})")
-        # Add your custom logic here (e.g., filter data, update plots, etc.)
+    #     Parameters:
+    #     - xmin_datetime: Start time of the selection (datetime string).
+    #     - xmax_datetime: End time of the selection (datetime string).
+    #     - ymin: Minimum y-axis value of the selection.
+    #     - ymax: Maximum y-axis value of the selection.
+    #     """
+    #     print(f"Selection made:")
+    #     print(f"x-axis range: ({xmin_datetime}, {xmax_datetime})")
+    #     print(f"y-axis range: ({ymin}, {ymax})")
+    #     # Add your custom logic here (e.g., filter data, update plots, etc.)
 
 
     def handle_cepstro_cursor_move(self, x, y):
@@ -530,7 +530,6 @@ class MainWindow(QWidget):
         self.spectrogram_tab = QWidget()
         self.spectrogram_layout = QVBoxLayout(self.spectrogram_tab)
         self.tabs.addTab(self.spectrogram_tab, "Spectrogram")
-
 
         # Create the third tab for whale detection
         self.whale_detection_tab = QWidget()

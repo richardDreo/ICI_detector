@@ -10,12 +10,14 @@ import pandas as pd
 
 import numpy as np
 import pandas as pd
+import logging
 
 def integrate_tf_representation(t, R: np.ndarray, i: int) -> tuple:
     """
     Average every 'i' spectra along the time axis, ignoring NaNs in R,
     and include the last incomplete block.
     """
+    logging.info("Call fucntion: integrate_tf_representation")
     t = np.asarray(t)
 
     n_rows, n_cols = R.shape
@@ -45,6 +47,8 @@ def integrate_tf_representation(t, R: np.ndarray, i: int) -> tuple:
 
 
 def get_spectrogram(tr: Trace, fftsize: int, noverlap: int, integration: int = None, demBounds: list = None) -> tuple:
+    
+    logging.info("Call fucntion: get_spectrogram")
     samples = tr.data
     additional_freq = 0
     sampling_rate = tr.stats.sampling_rate
@@ -107,6 +111,7 @@ def get_demodulated_samples(samples: np.ndarray, fs: float, demodulation_boundar
     new_fs : float
         The new sample rate (fmax - fmin) * 2.
     """
+    logging.info("Call fucntion: get_demodulated_samples")
     fmin, fmax = demodulation_boundaries
     band_width = fmax - fmin
     new_fs = band_width * 2
@@ -167,6 +172,7 @@ def get_cepstro(t: np.ndarray, f: np.ndarray, s: np.ndarray) -> tuple:
     c : np.ndarray
         Cepstrum of the spectrogram.
     """
+    logging.info("Call fucntion: get_cepstro")
 
     c = np.zeros(np.shape(s))
     df = f[1] - f[0]

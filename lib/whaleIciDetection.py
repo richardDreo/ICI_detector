@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy import signal
+import logging
 
 
 def get_peak_to_valley_ratio(quefrency: np.ndarray, cepstrogram: np.ndarray, peak_values: list, valley_values: list, window_size: int) -> pd.Series:
@@ -25,6 +26,7 @@ def get_peak_to_valley_ratio(quefrency: np.ndarray, cepstrogram: np.ndarray, pea
     pd.Series
         Time series corresponding to the peak to valley ratio.
     """
+    logging.info("Call function: get_peak_to_valley_ratio")
     try:
         cepstrogram_df = pd.DataFrame(np.abs(cepstrogram))
 
@@ -44,7 +46,7 @@ def get_peak_to_valley_ratio(quefrency: np.ndarray, cepstrogram: np.ndarray, pea
         return peak_to_valley_ratio
 
     except Exception as e:
-        print(f"Error computing peak to valley ratio: {e}")
+        logging.error(f"Error computing peak to valley ratio: {e}")
         return pd.Series()
 
 
@@ -64,6 +66,7 @@ def get_mean_cepstrum(cepstrum: np.ndarray, quefrency: np.ndarray = None) -> np.
     np.ndarray
         The mean cepstrum with the linear trend removed.
     """
+    logging.info("Call Function: get_mean_cepstrum")
     if quefrency is None:
         quefrency = np.arange(cepstrum.shape[0])
 
@@ -82,7 +85,8 @@ def get_mean_cepstrum(cepstrum: np.ndarray, quefrency: np.ndarray = None) -> np.
     return mean_cepstrum - linear_trend
 
 
-def get_preset_parameters(species=None):
+def get_preset_parameters(species=None):    
+    logging.info("Call Function: get_preset_parameters")
     params = [
         ['abw', 2**10, 0.95, 5, 24, 26, [67, 77], [57,87],'abw'],
         ['mpbw', 2**12, 0.95, 5, 20, 26, [100, 120], [80,140],'mpbw'],
