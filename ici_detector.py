@@ -540,7 +540,7 @@ class MainWindow(QWidget):
         # Create the fourth tab for reporting
         self.reporting_tab = QWidget()
         self.reporting_layout = QVBoxLayout(self.reporting_tab)
-        self.tabs.addTab(self.reporting_tab, "Reporting")
+        # self.tabs.addTab(self.reporting_tab, "Reporting")
 
         # Button to update reporting
         update_reporting_button = QPushButton("Update Reporting")
