@@ -1,6 +1,6 @@
 # GUI\_ICI\_Detector
 
-A graphical user interface (GUI) for detecting **inter-click intervals (ICI)** in whale acoustic data, specifically for *Balaenoptera physalus* (fin whale) calls.
+A graphical user interface (GUI) for detecting **inter-click intervals (ICI)** in under water acoustic data, specifically for *Balaenoptera physalus* (fin whale) calls, (Pygmy) blue Whales.
 The tool enables efficient visualization, parameter tuning, and analysis of large-scale underwater acoustic datasets.
 
 ---

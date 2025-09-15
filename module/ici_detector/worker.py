@@ -34,9 +34,6 @@ class WorkerIciDetector(QThread):
     def run_detection_process(self):
         self.currently_computing=True
 
-
-
-
         # self.species_df = self.dict_params["species_df"]["species"]
         self.stations_df = self.dict_params["stations_df"]
         self.files_to_process_df = self.dict_params["files_to_process_df"]
