@@ -1,11 +1,11 @@
 # GUI\_ICI\_Detector
 
-A graphical user interface (GUI) for detecting **inter-click intervals (ICI)** in under water acoustic data, specifically for whales emitting stereotyed songs with regular intevals (fin whales, (Pygmy) blue Whales).
+A graphical user interface (GUI) for detecting baleen whale inter-click intervals (ICI) in under water acoustic data. Specifically designed for whales emitting stereotyped songs with regular intervals (Fin whales, Blue whales). 
 The tool enables efficient visualization, parameter tuning, and analysis of large-scale underwater acoustic datasets.
 
 ## 📚 References
 
-This tool is based on ther following paper:
+This tool is based on the following paper:
 
 > Dréo, R., Crawford, W. C., Barruol, G., Bazin, S., Royer, J.-Y., & Samaran, F. (2025).  
 > Singing around the volcano: Detecting baleen whales in the Mozambique channel based on their song rhythms, from seismic and hydroacoustic data.  
