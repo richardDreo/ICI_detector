@@ -39,6 +39,14 @@ This tool is based on the following paper:
 
 👉 Full dependency list: see [`requirements.txt`](requirements.txt)
 
+### ⚠️ Note for Windows Users
+
+Windows users may need to manually install the `greenlet` package to ensure compatibility with certain dependencies. Use the following command:
+
+```bash
+pip install greenlet
+```
+
 ---
 
 ## 📦 Installation
