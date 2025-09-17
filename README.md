@@ -13,8 +13,11 @@ This tool is based on the following paper:
 > [https://pubs.aip.org/jasa/article/157/5/3418/3345827/Singing-around-the-volcano-Detecting-baleen-whales](https://pubs.aip.org/jasa/article/157/5/3418/3345827/Singing-around-the-volcano-Detecting-baleen-whales)  
 > DOI: [10.1121/10.0036510](https://doi.org/10.1121/10.0036510)
 
-To cite this software: 
-> [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17136315.svg)](https://doi.org/10.5281/zenodo.17136315)
+## 📑 Citation
+
+To cite this software, please use the following DOI:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17136315.svg)](https://doi.org/10.5281/zenodo.17136315)
 
 ---
 
