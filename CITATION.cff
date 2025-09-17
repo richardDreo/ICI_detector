@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: "ICI Detector"
+version: "v1.0.0"
+authors:
+  - family-names: "Dréo"
+    given-names: "Richard"
+    orcid: "https://orcid.org/0000-0002-7951-9088"
+doi: "https://doi.org/10.5281/zenodo.17136315"
+date-released: "2025-09-16"
