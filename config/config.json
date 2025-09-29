@@ -1,4 +1,5 @@
 {
     "SDS_folder": "/Volumes/SDS",
-    "INV_folder": "/Volumes/SDS/INVENTORIES"
+    "INV_folder": "/Volumes/SDS/INVENTORIES",
+    "EXPORT_folder": "/Users/admin/Documents/science_workspace/STUDIES_BOKSOUND/export_ici_gui"
 }

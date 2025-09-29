@@ -6,7 +6,8 @@ from module.ici_detector.display import DisplayIciDetector
 from PySide6.QtCore import Signal, QObject
 import numpy as np
 import pandas as pd
-
+import pickle, json
+import logging
 
 class ModuleIciDetector(QObject):
     sig_new_selection_to_save= Signal(dict)
@@ -21,7 +22,9 @@ class ModuleIciDetector(QObject):
         self.parameterWidget.detection_results_radio.clicked.connect(self.update_p2vr_result)
         self.worker.sig_processed_detection.connect(self.get_detection_result)
 
-    def __init__(self):
+    def __init__(self, config_path: str):
+        self.config_path=config_path
+
         super().__init__()
         self.plotter = PlottingIciDetectorHandler()
         self.display = DisplayIciDetector()
@@ -114,7 +117,26 @@ class ModuleIciDetector(QObject):
                 self.cesptrogram_result["vmax"],
                 self.cesptrogram_result["metric"]
             )
+            import pickle
 
+    def save_results_to_pickle(self):
+        """
+        Save the content of self.cesptrogram_result to a pickle file.
+
+        :param file_path: Path to the pickle file where the data will be saved.
+        """
+
+        with open(self.config_path, 'r') as file:
+            self.config = json.load(file) 
+        file_path = f'{self.config["EXPORT_folder"]}/test.pkl'
+        try:
+            with open(file_path, "wb") as pickle_file:
+                pickle.dump(self.cesptrogram_result, pickle_file)
+            logging.info(f"Results saved successfully to {file_path}")
+        except Exception as e:
+            logging.error(f"Error saving results to pickle: {e}")
+
+    
     def save_coordinates(self):
         # print(self.cesptrogram_result)
         self.plotter.rectangle_info["sta"] = self.cesptrogram_result["files_to_process_df"]["sta"].iloc[0]

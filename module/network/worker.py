@@ -12,12 +12,14 @@ class NetworkManager:
 
         self.inventory_path = self.config["INV_folder"]
         self.data_path = self.config["SDS_folder"]
+        self.export_path = self.config["EXPORT_folder"]
         self.dfstations = pd.DataFrame()
         self.dfmseeds = pd.DataFrame()
 
         # Check if the folders exist
         self._check_folder_exists(self.inventory_path, "INVENTORY folder")
         self._check_folder_exists(self.data_path, "SDS folder")
+        self._check_folder_exists(self.export_path, "EXPORT folder")
 
 
     
@@ -146,12 +148,18 @@ class NetworkManager:
             """Check if the folder contains XML files."""
             return bool(glob.glob(os.path.join(folder_path, "*.xml")))
 
+        def is_valid_export_folder(folder_path):
+            """Check if the folder has write permission."""
+            return os.access(folder_path, os.W_OK)
+        
         def validate_folder(folder_path, folder_name):
             """Validate the folder based on its type."""
             if folder_name == "SDS folder" and not is_valid_sds_folder(folder_path):
                 raise ValueError(f"The selected folder is not a valid SDS folder.")
             if folder_name == "INVENTORY folder" and not is_valid_inventory_folder(folder_path):
                 raise ValueError(f"The selected folder does not contain XML files.")
+            if folder_name == "EXPORT folder" and not is_valid_export_folder(folder_path):
+                raise ValueError(f"The selected folder has no write permission.")
 
         while True:
             # Check if the folder exists
@@ -202,6 +210,9 @@ class NetworkManager:
         elif folder_name == "SDS folder":
             self.data_path = folder_path
             self.config["SDS_folder"] = folder_path
+        elif folder_name == "EXPORT folder":
+            self.export_path = folder_path
+            self.config["EXPORT_folder"] = folder_path
 
         # Save the updated configuration to the JSON file
         self._save_config()

@@ -35,7 +35,7 @@ class MapPlotter:
         self.ax1.clear()
         self.ax2.clear()
 
-    def plot_network_map(self, network_stations, selected_station, network_coords):
+    def plot_network_map(self, network_stations, selected_station, network_coords, dfstations=None):
         """
         Plot the network map with Cartopy.
 
@@ -52,6 +52,12 @@ class MapPlotter:
         self.ax1.add_feature(cfeature.LAND)
         self.ax1.add_feature(cfeature.OCEAN)
         self.ax1.add_feature(cfeature.COASTLINE)
+
+        # If dfstations is provided, plot the stations in green with 50% transparency
+        if dfstations is not None and not dfstations.empty:
+            df_lons = dfstations['lon'].values
+            df_lats = dfstations['lat'].values
+            self.ax1.scatter(df_lons, df_lats, color='green', s=2, alpha=0.1, transform=ccrs.PlateCarree())
 
         if network_stations.empty:
             self.canvas.draw()

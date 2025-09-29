@@ -29,6 +29,8 @@ from module.ici_detector.module import ModuleIciDetector
 from module.network.worker import NetworkManager
 from module.network.plot import MapPlotter
 
+from module.export.module import ModuleExport
+
 from utils.report_generator import ReportGenerator
 # === Désactiver les warnings ===
 warnings.filterwarnings("ignore")
@@ -165,7 +167,7 @@ class MainWindow(QWidget):
         network_coords = self.get_selected_network_coords(network_stations)
         selected_station = self.station_combo.currentText()
 
-        self.networkMapPlotter.plot_network_map(network_stations, selected_station, network_coords)
+        self.networkMapPlotter.plot_network_map(network_stations, selected_station, network_coords, dfstations=self.dfstations)
 
     
     def run_detection_process(self):
@@ -361,6 +363,9 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
 
+        # Load config
+        config_path = os.path.join(os.path.dirname(__file__), "./config/config.json")     
+
         # create_modules()
         logging.info("Initializing ModuleSpectrogram")
         self.module_spectrogram = ModuleSpectrogram()
@@ -374,7 +379,7 @@ class MainWindow(QWidget):
         self.spectrogram_parameter_widget.refreshPlotRequested.connect(self.module_spectrogram.plot_spectrogram)
 
         logging.info("Initializing ModuleIciDetector")
-        self.module_detector = ModuleIciDetector()
+        self.module_detector = ModuleIciDetector(config_path)
         self.sig_set_dates.connect(self.module_detector.set_dates)
         self.module_detector.worker.progress.connect(self.update_progress_detector)
 
@@ -383,13 +388,11 @@ class MainWindow(QWidget):
         self.module_detector.sig_new_selection_to_save.connect(self.module_bdd.save_selection)
         self.module_bdd.sig_new_selection_added.connect(self.bdd_table_update)
 
-
-        # Load config
-        config_path = os.path.join(os.path.dirname(__file__), "./config/config.json")     
-
         # Créer l’instance du gestionnaire réseau     
         logging.info("Initializing NetworkManager")   
         self.network_manager = NetworkManager(config_path)
+
+        self.export_manager = ModuleExport()
 
         # Charger les données au démarrage
         self.dfstations, self.dfmseeds = self.network_manager.load_metadata()
@@ -485,12 +488,38 @@ class MainWindow(QWidget):
         sample_selection_group.setLayout(sample_selection_layout)
         left_panel.addWidget(sample_selection_group)
 
-        bdd_group = QGroupBox("BDD")
+        # bdd_group = QGroupBox("BDD")
+        # bdd_layout = QVBoxLayout()
+        # self.bddTable = QTableWidget()
+        # bdd_layout.addWidget(self.bddTable)
+        # bdd_group.setLayout(bdd_layout)
+        # left_panel.addWidget(bdd_group)
+
+        # /************************************************************************/
+        # Create a QTabWidget
+        tab_dialog_widget = QTabWidget()
+
+        # Create a QWidget to hold the BDD content (replacing QGroupBox)
+        bdd_tab = QWidget()
         bdd_layout = QVBoxLayout()
         self.bddTable = QTableWidget()
         bdd_layout.addWidget(self.bddTable)
-        bdd_group.setLayout(bdd_layout)
-        left_panel.addWidget(bdd_group)
+        bdd_tab.setLayout(bdd_layout)
+        tab_dialog_widget.addTab(bdd_tab, "BDD")
+
+
+      # Get the export_display widget from the export manager
+        export_display = self.export_manager.get_display_widget()
+
+        # Add the export_display widget as a tab in the QTabWidget
+        tab_dialog_widget.addTab(export_display, "Export")
+
+        # /************************************************************************/
+
+
+
+        # Add the QTabWidget to the left panel
+        left_panel.addWidget(tab_dialog_widget)
 
         # Label to display the estimated number of spectra
         self.num_spectra_label = QLabel("Estimated Number of Spectra: N/A")
@@ -620,7 +649,6 @@ class MainWindow(QWidget):
         self.spectrogram_layout.addWidget(self.save_button)
         self.network_layout.addWidget(map_plotting_group)
 
-
         # Distance information container
         distance_info_group = QGroupBox("Distance Information")
         distance_info_layout = QVBoxLayout()
@@ -673,7 +701,7 @@ class MainWindow(QWidget):
         self.toggle_shortcut = QShortcut(QKeySequence("Ctrl+B"), self)
         self.toggle_shortcut.activated.connect(self.toggle_controls_visibility)
 
-
+        self.module_detector.display.sig_save_cepstrogram.connect(self.module_detector.save_results_to_pickle)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

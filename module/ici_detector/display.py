@@ -1,8 +1,9 @@
-from PySide6.QtWidgets import QPushButton, QWidget, QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy
+from PySide6.QtWidgets import QPushButton, QWidget, QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy, QGridLayout
 from PySide6.QtCore import Signal
 
 class DisplayIciDetector(QWidget):
     sig_save_coordinates = Signal()
+    sig_save_cepstrogram = Signal()
 
     def __init__(self, parent=None):
         """
@@ -12,94 +13,46 @@ class DisplayIciDetector(QWidget):
         """
         super().__init__(parent)
 
-        # Main layout for the group box
-        main_layout = QVBoxLayout()
+        # Main layout for the widget
+        main_layout = QGridLayout()
 
-        # 1st QGroupBox: Cursor Information
-        self.cursor_info_group = QWidget()
+        # Row 2: Cursor Information
+        main_layout.addWidget(QLabel("Cursor:"), 0, 0)
+        self.cursor_time_label = QLabel("Date: N/A")
+        main_layout.addWidget(self.cursor_time_label, 0, 1)
+        self.cursor_frequency_label = QLabel("Quef: N/A")
+        main_layout.addWidget(self.cursor_frequency_label, 0, 2)
+        # Add Save Cepstro Button in the last column
+        self.save_cepstro_button = QPushButton("Save Cepstro")
+        self.save_cepstro_button.clicked.connect(self.on_save_cepstro_button_clicked)
+        main_layout.addWidget(self.save_cepstro_button, 0, 3)
 
-        cursor_info_layout = QHBoxLayout()
+        # Row 3: Selection Information
+        main_layout.addWidget(QLabel("Selection:"), 1, 0)
+        self.selection_time_label = QLabel("Date: N/A => N/A")
+        main_layout.addWidget(self.selection_time_label, 1, 1)
+        self.selection_frequency_label = QLabel("Quef: N/A => N/A")
+        main_layout.addWidget(self.selection_frequency_label, 1, 2)
 
-        # Add "Date" label and value
-        cursor_info_layout.addWidget(QLabel("Cursor Information => "))
-        cursor_info_layout.addStretch()
-        cursor_info_layout.addWidget(QLabel("Date:"))
-        self.cursor_time_label = QLabel("N/A")
-        cursor_info_layout.addWidget(self.cursor_time_label)
-        cursor_info_layout.addStretch()
-
-        # Add "Quefrency" label and value
-        self.label_y = QLabel("Quefrency:")
-        cursor_info_layout.addWidget(self.label_y)
-        self.cursor_frequency_label = QLabel("N/A")
-        cursor_info_layout.addWidget(self.cursor_frequency_label)
-
-        self.cursor_info_group.setLayout(cursor_info_layout)
-
-        # 2nd QGroupBox: Rectangle Selection Information
-        self.rect_info_group = QWidget()
-        
-        rect_main_layout = QHBoxLayout()
-        rect_main_layout.addWidget(QLabel("Selection Information =>"))
-        rect_main_layout.addStretch()
-
-        # Horizontal layout for Date labels
-        date_layout = QHBoxLayout()
-        date_layout.addWidget(QLabel("Dates:"))
-        self.rect_date_min_label = QLabel("N/A")
-        date_layout.addWidget(self.rect_date_min_label)
-
-        date_layout.addWidget(QLabel("=>"))
-        self.rect_date_max_label = QLabel("N/A")
-        date_layout.addWidget(self.rect_date_max_label)
-
-        # Horizontal layout for Quefrency labels
-        quefrency_layout = QHBoxLayout()
-        quefrency_layout.addWidget(QLabel("Quefrency Min:"))
-        self.rect_quef_min_label = QLabel("N/A")
-        quefrency_layout.addWidget(self.rect_quef_min_label)
-
-        quefrency_layout.addWidget(QLabel("=>"))
-        self.rect_quef_max_label = QLabel("N/A")
-        quefrency_layout.addWidget(self.rect_quef_max_label)
-
-        # Add both horizontal layouts to the main layout of rect_info_group
-        rect_main_layout.addLayout(date_layout)
-        # Add a stretch to create empty space
-        rect_main_layout.addStretch()
-        rect_main_layout.addLayout(quefrency_layout)
-        rect_main_layout.addStretch()
-        # Add a QPushButton to save rectangle coordinates
+        # Add Save Button in the last column
         self.save_button = QPushButton("Save Coordinates")
-
         self.save_button.clicked.connect(self.on_save_button_clicked)
-        rect_main_layout.addWidget(self.save_button)
+        main_layout.addWidget(self.save_button, 1, 3)
 
-        self.rect_info_group.setLayout(rect_main_layout)
-
-        # Add both QGroupBoxes to the main layout
-        main_layout.addWidget(self.cursor_info_group)
-        main_layout.addWidget(self.rect_info_group)
-
-        # Set the main layout for the group box
+        # Set the layout for the widget
         self.setLayout(main_layout)
-        main_layout.setContentsMargins(1, 1, 1, 1)  # Remove all margins inside the layout
-        main_layout.setSpacing(0) 
-        cursor_info_layout.setContentsMargins(0, 0, 0, 0)
-        cursor_info_layout.setSpacing(0) 
-        
-        rect_main_layout.setContentsMargins(0, 0, 0, 0)
-        rect_main_layout.setSpacing(0) 
-        
-        date_layout.setContentsMargins(0, 0, 0, 0)
-        date_layout.setSpacing(0) 
-        
-        quefrency_layout.setContentsMargins(0, 0, 0, 0)
-        quefrency_layout.setSpacing(0) 
 
+        # Adjust margins and spacing
+        main_layout.setContentsMargins(1, 1, 1, 1)
+        main_layout.setHorizontalSpacing(2)
+        main_layout.setVerticalSpacing(1)
 
         # Set the size policy
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+
+    def on_save_cepstro_button_clicked(self):
+        # Emit the custom signal
+        self.sig_save_cepstrogram.emit()
 
     def on_save_button_clicked(self):
         # Emit the custom signal
@@ -112,9 +65,8 @@ class DisplayIciDetector(QWidget):
         :param time: The time value to display.
         :param frequency: The frequency value to display.
         """
-        self.cursor_time_label.setText(time)
-        self.label_y.setText(label_y)
-        self.cursor_frequency_label.setText(f"{y_value:.2f} s")
+        self.cursor_time_label.setText(f"Date: {time}")
+        self.cursor_frequency_label.setText(f"Quef: {y_value:.2f} s")
 
     def update_rectangle_info(self, date_min, date_max, quef_min, quef_max):
         """
@@ -125,11 +77,8 @@ class DisplayIciDetector(QWidget):
         :param quef_min: The minimum quefrency value.
         :param quef_max: The maximum quefrency value.
         """
-        self.rect_date_min_label.setText(date_min)
-        self.rect_date_max_label.setText(date_max)
-        self.rect_quef_min_label.setText(f"{quef_min:.2f} s")
-        self.rect_quef_max_label.setText(f"{quef_max:.2f} s")
-
+        self.selection_time_label.setText(f"Date: {date_min} => {date_max}    ")
+        self.selection_frequency_label.setText(f"Quef: {quef_min:.2f} s => {quef_max:.2f} s")
 
 
     def toggle_visibility(self):
