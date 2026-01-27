@@ -37,7 +37,7 @@ class WorkerIciDetector(QThread):
         # self.species_df = self.dict_params["species_df"]["species"]
         self.stations_df = self.dict_params["stations_df"]
         self.files_to_process_df = self.dict_params["files_to_process_df"]
-
+        self.metric = self.dict_params["metric"]
         # self.species_df = self.species_df.loc[self.dict_params["species"]]
 
         self.counter = 0
@@ -77,16 +77,23 @@ class WorkerIciDetector(QThread):
             st.trim(UTCDateTime(row.datetime), UTCDateTime(row.datetime + timedelta(hours=24)))
             t, q, c = self.process_species(st, self.dict_params)
 
-            delta = timedelta(seconds=pd.to_timedelta(self.metric).total_seconds())
             current_day = row.starttime.floor('D')
 
             t_hourly, c_hourly = [], []
-            for hour in pd.date_range(start=current_day, periods=int((24*3600)/delta.total_seconds()), freq=self.metric):
-                mask = (t >= hour) & (t < hour + delta)
-                if np.any(mask):
-                    c_hour = get_mean_cepstrum(c[:, mask], q)
-                    t_hourly.append(hour)
-                    c_hourly.append(c_hour)
+
+            if not "raw" in self.metric :
+                delta = timedelta(seconds=pd.to_timedelta(self.metric).total_seconds())
+                for hour in pd.date_range(start=current_day, periods=int((24*3600)/delta.total_seconds()), freq=self.metric):
+
+                    mask = (t >= hour) & (t < hour + delta)
+                    if np.any(mask):
+                        c_hour = get_mean_cepstrum(c[:, mask], q)
+                        t_hourly.append(hour)
+                        c_hourly.append(c_hour)
+            else:
+                for i in range(len(t)):
+                    t_hourly.append(pd.to_datetime(t[i]))
+                    c_hourly.append(c[:, i])
 
             if len(t_hourly) > 0:
                 self.counter += 1
@@ -126,7 +133,7 @@ class WorkerIciDetector(QThread):
 
             return get_cepstro(t, f, s)
         except Exception as e:
-            print('Error processing species:', e)
+            logging.error('Error processing species:', e)
             return None, None, None
 
     def run_p2vr_detection(self, q, c, params):

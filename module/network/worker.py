@@ -20,8 +20,6 @@ class NetworkManager:
         self._check_folder_exists(self.inventory_path, "INVENTORY folder")
         self._check_folder_exists(self.data_path, "SDS folder")
         self._check_folder_exists(self.export_path, "EXPORT folder")
-
-
     
     def load_metadata(self, network: str = '*', station: str = '*'):
         """
@@ -50,17 +48,17 @@ class NetworkManager:
         return self.dfstations, self.dfmseeds
 
 
-    def load_metadata(self, network: str = '*', station: str = '*'):
-        """
-        Charge les stations et fichiers disponibles pour un réseau donné.
-        """
-        self.dfstations = get_network_details(network, self.inventory_path)
-        self.dfstations = self.dfstations[self.dfstations['ele'] < 0]  # Sous-marins uniquement
+    # def load_metadata(self, network: str = '*', station: str = '*'):
+    #     """
+    #     Charge les stations et fichiers disponibles pour un réseau donné.
+    #     """
+    #     self.dfstations = get_network_details(network, self.inventory_path)
+    #     self.dfstations = self.dfstations[self.dfstations['ele'] < 0]  # Sous-marins uniquement
 
-        self.dfmseeds = get_network_file_list(network, station, self.data_path)
-        self.dfmseeds['cha'] = self.dfmseeds['cha'].str.split('.').str[0]
+    #     self.dfmseeds = get_network_file_list(network, station, self.data_path)
+    #     self.dfmseeds['cha'] = self.dfmseeds['cha'].str.split('.').str[0]
         
-        return self.dfstations, self.dfmseeds
+    #     return self.dfstations, self.dfmseeds
 
 
     def get_channels_by_station(self, network: str, station: str):

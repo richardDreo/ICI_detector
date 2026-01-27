@@ -6,6 +6,9 @@ from PySide6.QtCore import Signal
 from lib.whaleIciDetection import (
     get_preset_parameters
 )
+import logging
+
+
 class ParametersWidgetDetector(QWidget):
     # Signals to notify changes or actions
     parametersUpdated = Signal()
@@ -40,11 +43,12 @@ class ParametersWidgetDetector(QWidget):
         metric_label = QLabel("Metric:")
         self.metric_combo = QComboBox()
         self.metric_combo.addItems(["5mn", "15mn", "1H"])
-        metric_dict = {"5mn": "5T", "15mn": "15T", "1H": "1H"}
+        metric_dict = {"5mn": "5T", "15mn": "15T", "1H": "1H", "raw":"raw"}
 
         def update_metric():
             selected_metric = self.metric_combo.currentText()
             self.detector_metric = metric_dict[selected_metric]
+
 
         self.metric_combo.currentIndexChanged.connect(update_metric)
         self.metric_combo.setCurrentText("1H")  # Default value
@@ -265,7 +269,7 @@ class ParametersWidgetDetector(QWidget):
                 'valley_boundaries': tuple(valley_boundaries)
             }
         except Exception as e:
-            print(f"Error retrieving detector parameters: {e}")
+            logging.error(f"Error retrieving detector parameters: {e}")
             return None  # Return None if there is an error
 
     def get_all_parameters(self):
@@ -305,7 +309,7 @@ class ParametersWidgetDetector(QWidget):
             self.qmin_edit.setText(f"{qmin:.2f}")
             self.qmax_edit.setText(f"{qmax:.2f}")
         except ValueError:
-            print("Invalid qmin or qmax value. Both must be numeric.")
+            logging.error("Invalid qmin or qmax value.")
 
     def get_p2vr_threshold(self):
         """Retrieve the p2vr threshold value."""
@@ -314,7 +318,7 @@ class ParametersWidgetDetector(QWidget):
             return float(self.threshold_edit.text())
         except ValueError:
             # Handle invalid input gracefully
-            print("Invalid p2vr threshold value. Returning None.")
+            logging.error("Invalid p2vr threshold value. Returning None.")
             return None
         
     def get_display_mode(self):

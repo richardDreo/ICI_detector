@@ -158,7 +158,6 @@ class MetadataTool(QMainWindow):
                 for col in range(column_count):
                     header = self.table.horizontalHeaderItem(col).text().split("\n")[0]  # Extract field name
                     cell_value = self.table.item(row, col)
-                    print(header, cell_value.text())
                     row_data[header] = cell_value.text() if cell_value else ""
                 table_data.append(row_data)
             self.data = pd.DataFrame(table_data)
@@ -199,7 +198,7 @@ class MetadataTool(QMainWindow):
         file_path, _ = QFileDialog.getSaveFileName(self, "Save XML File", "", "XML Files (*.xml)")
         if file_path:
             inventory.write(file_path, format="STATIONXML")
-            print(f"XML file saved to {file_path}")
+
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ from reportlab.lib.utils import ImageReader
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import pandas as pd
-
+import logging
 
 class ReportGenerator:
     def __init__(self, global_figures_area):
@@ -345,8 +345,7 @@ class ReportGenerator:
         Save the generated report to a PDF file.
         """
         # Define the default file name
-        print(self.start_time)
-        print(self.end_time)
+
         default_filename = f"{self.selected_network}_{self.selected_station}_{self.cepstrogram_params['species']}_{self.start_time.replace('/', '').replace(':', '').replace(' ', '_')}_{self.end_time.replace('/', '').replace(':', '').replace(' ', '_')}.pdf"
         # Open a file dialog to select the save location
         file_dialog = QFileDialog()
@@ -357,11 +356,11 @@ class ReportGenerator:
         if file_dialog.exec():
             selected_file = file_dialog.selectedFiles()[0]
         else:
-            print("Save operation canceled.")
+            logging.error("Save operation canceled.")
             return
 
         if not self.current_figure:
-            print("No figure available to save.")
+            logging.error("No figure available to save.")
             return
 
         try:
@@ -389,7 +388,7 @@ class ReportGenerator:
 
             # Save the PDF
             pdf_canvas.save()
-            print(f"Report saved to {selected_file}")
+
 
         except Exception as e:
-            print(f"Error saving report: {e}")
+            logging.error(f"Error saving report: {e}")

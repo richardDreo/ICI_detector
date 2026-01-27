@@ -11,6 +11,7 @@ import logging
 
 class ModuleIciDetector(QObject):
     sig_new_selection_to_save= Signal(dict)
+    sig_cesptrogram_computed= Signal(dict)
 
     def set_connections(self):
         self.plotter.sig_cursorMoved.connect(self.display.update_cursor_info)
@@ -84,6 +85,7 @@ class ModuleIciDetector(QObject):
         result['cepstro'] = result['cepstro'][:, mask]
 
         self.update_p2vr_result()
+        
 
     def update_p2vr_result(self):
         new_params = self.parameterWidget.get_all_parameters()
@@ -117,27 +119,9 @@ class ModuleIciDetector(QObject):
                 self.cesptrogram_result["vmax"],
                 self.cesptrogram_result["metric"]
             )
-            import pickle
-
-    def save_results_to_pickle(self):
-        """
-        Save the content of self.cesptrogram_result to a pickle file.
-
-        :param file_path: Path to the pickle file where the data will be saved.
-        """
-
-        with open(self.config_path, 'r') as file:
-            self.config = json.load(file) 
-        file_path = f'{self.config["EXPORT_folder"]}/test.pkl'
-        try:
-            with open(file_path, "wb") as pickle_file:
-                pickle.dump(self.cesptrogram_result, pickle_file)
-            logging.info(f"Results saved successfully to {file_path}")
-        except Exception as e:
-            logging.error(f"Error saving results to pickle: {e}")
+        self.sig_cesptrogram_computed.emit(self.cesptrogram_result)
 
     
     def save_coordinates(self):
-        # print(self.cesptrogram_result)
         self.plotter.rectangle_info["sta"] = self.cesptrogram_result["files_to_process_df"]["sta"].iloc[0]
         self.sig_new_selection_to_save.emit(self.plotter.rectangle_info)

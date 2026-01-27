@@ -27,7 +27,7 @@ from module.spectrogram.module import ModuleSpectrogram
 from module.ici_detector.module import ModuleIciDetector
 
 from module.network.worker import NetworkManager
-from module.network.plot import MapPlotter
+from module.network.plot import MapPlotter, TimelinePlotter
 
 from module.export.module import ModuleExport
 
@@ -168,6 +168,7 @@ class MainWindow(QWidget):
         selected_station = self.station_combo.currentText()
 
         self.networkMapPlotter.plot_network_map(network_stations, selected_station, network_coords, dfstations=self.dfstations)
+        self.timelinePlotter.plot_station_availability(network_stations)
 
     
     def run_detection_process(self):
@@ -182,6 +183,9 @@ class MainWindow(QWidget):
                                                                                                      starttime,
                                                                                                      endtime)
             dict_params["stations_df"] = self.dfstations
+            dict_params["net"]= self.network_combo.currentText()
+            dict_params["sta"]= self.station_combo.currentText()
+            dict_params["cha"]= self.channel_combo.currentText()
             self.module_detector.compute_ici_detection(dict_params)
 
         except Exception as e:
@@ -199,6 +203,9 @@ class MainWindow(QWidget):
                                                                                                      starttime,
                                                                                                      endtime)
             dict_params["stations_df"] = self.dfstations
+            dict_params["net"]= self.network_combo.currentText()
+            dict_params["sta"]= self.station_combo.currentText()
+            dict_params["cha"]= self.channel_combo.currentText()
             self.module_spectrogram.compute_spectrogram(dict_params)
 
         except Exception as e:
@@ -211,22 +218,6 @@ class MainWindow(QWidget):
 
     def update_progress_detector(self, value):
         self.num_spectra_label.setText(f"Processing... {value}/{len(self.module_detector.worker.files_to_process_df)}")
-
-
-    # def handle_cepstro_selection(self, xmin_datetime, xmax_datetime, ymin, ymax):
-    #     """
-    #     Handle the rectangle selection event.
-
-    #     Parameters:
-    #     - xmin_datetime: Start time of the selection (datetime string).
-    #     - xmax_datetime: End time of the selection (datetime string).
-    #     - ymin: Minimum y-axis value of the selection.
-    #     - ymax: Maximum y-axis value of the selection.
-    #     """
-    #     print(f"Selection made:")
-    #     print(f"x-axis range: ({xmin_datetime}, {xmax_datetime})")
-    #     print(f"y-axis range: ({ymin}, {ymax})")
-    #     # Add your custom logic here (e.g., filter data, update plots, etc.)
 
 
     def handle_cepstro_cursor_move(self, x, y):
@@ -392,7 +383,7 @@ class MainWindow(QWidget):
         logging.info("Initializing NetworkManager")   
         self.network_manager = NetworkManager(config_path)
 
-        self.export_manager = ModuleExport()
+        self.export_manager = ModuleExport(config_path)
 
         # Charger les données au démarrage
         self.dfstations, self.dfmseeds = self.network_manager.load_metadata()
@@ -516,8 +507,6 @@ class MainWindow(QWidget):
 
         # /************************************************************************/
 
-
-
         # Add the QTabWidget to the left panel
         left_panel.addWidget(tab_dialog_widget)
 
@@ -608,8 +597,6 @@ class MainWindow(QWidget):
         #############################################################################
 
 
-
-
         # Detection results plot area
 
         # Create a QFrame to hold the plot
@@ -649,9 +636,26 @@ class MainWindow(QWidget):
         self.spectrogram_layout.addWidget(self.save_button)
         self.network_layout.addWidget(map_plotting_group)
 
-        # Distance information container
-        distance_info_group = QGroupBox("Distance Information")
-        distance_info_layout = QVBoxLayout()
+
+        #------------------------------------------------------------------------------------------------
+        # Network information tabs
+        #------------------------------------------------------------------------------------------------
+        tab_net_info_widget = QTabWidget()
+
+
+        # Timeline information container
+        # Create a QFrame to hold the timeline plot
+        self.timeline_plot_area = QFrame()
+        self.timeline_plot_area.setFrameShape(QFrame.StyledPanel)
+        # Initialize the TimelinePlotter with the timeline plot area
+        self.timelinePlotter = TimelinePlotter(self.timeline_plot_area)
+        # Add a layout to the timeline_plot_area
+        timeline_layout = QVBoxLayout(self.timeline_plot_area)
+        # Add the TimelinePlotter to the layout
+        timeline_layout.addWidget(self.timelinePlotter)
+
+        # Add the timeline information group as a new tab
+        tab_net_info_widget.addTab(self.timeline_plot_area, "Timeline Info")
 
         # Create a table to display the distance information
         self.distance_table = QTableWidget()
@@ -659,13 +663,11 @@ class MainWindow(QWidget):
         self.distance_table.setHorizontalHeaderLabels(["Station 1", "Station 2", "Distance (km)"])
         self.distance_table.horizontalHeader().setStretchLastSection(True)
         self.distance_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-        # Add the table to the layout
-        distance_info_layout.addWidget(self.distance_table)
-        distance_info_group.setLayout(distance_info_layout)
-
         # Add the distance information group to the network layout
-        self.network_layout.addWidget(distance_info_group)
+        self.network_layout.addWidget(tab_net_info_widget)
+        tab_net_info_widget.addTab(self.distance_table, "Distance Info")
+        #------------------------------------------------------------------------------------------------
+        #------------------------------------------------------------------------------------------------
 
         # Update the distance table when stations are updated
         self.networkMapPlotter = MapPlotter(self.map_plot_area)
@@ -701,7 +703,9 @@ class MainWindow(QWidget):
         self.toggle_shortcut = QShortcut(QKeySequence("Ctrl+B"), self)
         self.toggle_shortcut.activated.connect(self.toggle_controls_visibility)
 
-        self.module_detector.display.sig_save_cepstrogram.connect(self.module_detector.save_results_to_pickle)
+        self.module_detector.sig_cesptrogram_computed.connect(self.export_manager.get_cepstrogram)
+        self.module_spectrogram.sig_spectrogram_computed.connect(self.export_manager.get_spectrogram)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

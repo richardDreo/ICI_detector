@@ -1,6 +1,6 @@
 import pandas as pd
 from PySide6.QtCore import Signal,QObject
-
+import logging
 
 class ManualSelectionHandler(QObject):
     sig_new_selection_added = Signal()
@@ -21,9 +21,9 @@ class ManualSelectionHandler(QObject):
                 updated_data = new_data
             updated_data.to_csv(self.csv_file_path, index=False)
             self.sig_new_selection_added.emit()
-            print("Selection saved successfully.")
+
         except Exception as e:
-            print(f"Error saving selection: {e}")
+            logging.error(f"Error saving selection: {e}")
 
     def remove_selection(self, row_index):
         """Remove a specific row from the CSV file based on its index."""
@@ -33,7 +33,7 @@ class ManualSelectionHandler(QObject):
 
             # Check if the row index is valid
             if row_index < 0 or row_index >= len(existing_data):
-                print(f"Invalid row index: {row_index}")
+                logging.error(f"Invalid row index: {row_index}")
                 return
 
             # Drop the row and reset the index
@@ -45,17 +45,17 @@ class ManualSelectionHandler(QObject):
             # Emit a signal to notify that a selection was removed
             self.sig_selection_removed.emit()
         except FileNotFoundError:
-            print("CSV file not found.")
+            logging.error("CSV file not found.")
         except Exception as e:
-            print(f"Error removing selection: {e}")
+            logging.error(f"Error removing selection: {e}")
 
     def load_selections(self):
         """Load all selections from the CSV file using pandas."""
         try:
             return pd.read_csv(self.csv_file_path)
         except FileNotFoundError:
-            print("CSV file not found. Returning empty DataFrame.")
+            logging.error("CSV file not found. Returning empty DataFrame.")
             return pd.DataFrame(columns=['datemin', 'datemax', 'quefmin', 'quefmax'])
         except Exception as e:
-            print(f"Error loading selections: {e}")
+            logging.error(f"Error loading selections: {e}")
             return pd.DataFrame()

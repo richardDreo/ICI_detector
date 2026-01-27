@@ -54,6 +54,8 @@ class WorkerSpectrogram(QThread):
             'f': f[0],
             'slog': np.concatenate(slog, axis=1)
         }
+        result.update(self.dict_params)
+
         self.processed_longterm_spectrogram_ready.emit(result)
         self.quit()
         self.currently_computing = False

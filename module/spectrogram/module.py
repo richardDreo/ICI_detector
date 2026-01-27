@@ -6,8 +6,11 @@ from PySide6.QtCore import QObject
 import numpy as np
 import pandas as pd
 from PySide6.QtWidgets import QMessageBox
+from PySide6.QtCore import Signal, QObject
+import logging
 
 class ModuleSpectrogram(QObject):
+    sig_spectrogram_computed= Signal(dict)
 
     def set_connections(self):
         self.plotter.cursorMoved.connect(self.display.update_cursor_info)
@@ -98,6 +101,8 @@ class ModuleSpectrogram(QObject):
             fmax,
             vmin,
             vmax)
+        
+        self.sig_spectrogram_computed.emit(self.spectrogram_result)
         
     def set_dates(self, starttime, endtime):
         self.starttime= starttime

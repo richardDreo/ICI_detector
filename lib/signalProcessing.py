@@ -58,7 +58,7 @@ def get_spectrogram(tr: Trace, fftsize: int, noverlap: int, integration: int = N
             samples, sampling_rate = get_demodulated_samples(samples, sampling_rate, demBounds)
             additional_freq = demBounds[0]
         except Exception as e:
-            print(f"Error in demodulation: {e}")
+            logging.error(f"Error in demodulation: {e}")
 
     frequencies, times, spectrogram = sp.stft(samples, fs=sampling_rate, nperseg=int(fftsize), noverlap=noverlap)   
     frequencies += additional_freq

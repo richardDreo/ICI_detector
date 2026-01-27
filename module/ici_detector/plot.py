@@ -346,7 +346,8 @@ class PlottingIciDetectorHandler(QFrame):
             factor = {"5T": 12, "15T": 4, "1H": 1}[metric]  # Determine the division factor based on the metric
             daily_positive_hours = resampled_positive.groupby(resampled_positive.index.date).sum() / factor
         else:
-            raise ValueError(f"Metric must be one of {list(metric_dict.values())} for correct positive hours calculation.")
+            daily_positive_hours = resampled_positive.copy()
+            # raise ValueError(f"Metric must be one of {list(metric_dict.values())} for correct positive hours calculation.")
         # Plot the daily positive hours as a bar chart
         self.ax3.bar(daily_positive_hours.index, daily_positive_hours.values, color='blue', label='DPH')
         self.ax3.set_xlim(starttime, endtime)
